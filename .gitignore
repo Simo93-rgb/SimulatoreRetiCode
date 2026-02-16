@@ -1,3 +1,9 @@
+# docs folder
+docs/
+
+# bin folder
+bin/
+
 # Compiled class file
 *.class
 
