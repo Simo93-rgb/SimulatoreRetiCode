@@ -40,7 +40,7 @@ import java.util.*;
 
 public class Rngs {
 
-  long MODULUS = 2147483647; /* DON'T CHANGE THIS VALUE */
+  public long MODULUS = 2147483647; /* DON'T CHANGE THIS VALUE */
   long MULTIPLIER = 48271; /* DON'T CHANGE THIS VALUE */
   static long CHECK = 399268537L; /* DON'T CHANGE THIS VALUE */
   long DEFAULT = 123456789L; /* initial seed, use 0 < DEFAULT < MODULUS */
