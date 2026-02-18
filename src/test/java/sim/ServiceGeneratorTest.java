@@ -38,6 +38,56 @@ class ServiceGeneratorTest {
     }
 
     @Test
+    @DisplayName("Verifica Distribuzione Uniforme")
+    void testUniform() {
+        double a = 2.0;
+        double b = 8.0;
+        double expectedMean = (a + b) / 2.0;
+        double expectedVariance = Math.pow(b - a, 2) / 12.0;
+
+        double sum = 0.0;
+        double sumSquares = 0.0;
+
+        for (int i = 0; i < N; i++) {
+            double sample = serviceGen.uniform(a, b);
+            assertTrue(sample >= a && sample <= b, "Il campione deve essere in [a, b]");
+            sum += sample;
+            sumSquares += sample * sample;
+        }
+
+        double actualMean = sum / N;
+        double actualVariance = (sumSquares / N) - (actualMean * actualMean);
+
+        assertEquals(expectedMean, actualMean, expectedMean * TOLERANCE, "La media uniforme non è corretta");
+        assertEquals(expectedVariance, actualVariance, expectedVariance * TOLERANCE, "La varianza uniforme non è corretta");
+    }
+
+    @Test
+    @DisplayName("Verifica Distribuzione Erlang")
+    void testErlang() {
+        double mean = 10.0;
+        long k = 5; // 5 stadi
+        double expectedMean = mean;
+        double expectedVariance = (mean * mean) / k;
+
+        double sum = 0.0;
+        double sumSquares = 0.0;
+
+        for (int i = 0; i < N; i++) {
+            double sample = serviceGen.erlang(mean, k);
+            assertTrue(sample > 0, "Il tempo di servizio Erlang deve essere positivo");
+            sum += sample;
+            sumSquares += sample * sample;
+        }
+
+        double actualMean = sum / N;
+        double actualVariance = (sumSquares / N) - (actualMean * actualMean);
+
+        assertEquals(expectedMean, actualMean, expectedMean * TOLERANCE, "La media Erlang non è corretta");
+        assertEquals(expectedVariance, actualVariance, expectedVariance * 0.05, "La varianza Erlang non è corretta");
+    }
+
+    @Test
     @DisplayName("Verifica Iper-Esponenziale")
     void testHyperExponential() {
         double p = 0.7; // 70% ramo 1
