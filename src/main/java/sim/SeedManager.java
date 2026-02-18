@@ -13,11 +13,11 @@ public class SeedManager {
     /**
      * Modulus del generatore LCG (Lehmer generator).
      *
-     * Valore: 2^31 - 1 = 2,147,483,647 (numero primo di Mersenne).
+     * Valore letto da Rngs per evitare hardcoding duplicato.
      *
      * Riferimento: Park & Miller (1988), "Random Number Generators: Good Ones Are Hard To Find"
      */
-    public static final long MODULUS = 2_147_483_647L;
+    public static final long MODULUS = new Rngs().MODULUS;
 
     /**
      * Spacing minimo tra semi per garantire indipendenza statistica.
