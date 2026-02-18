@@ -2,9 +2,13 @@
 .idea/
 .vscode/
 target/
+commit.md
+Simulatore_base_proposto/
 
 # docs folder
-docs/
+docs/struttura progetto.md
+docs/svolgimento.md
+docs/piano-integrazione-simulatore.md
 
 # bin folder
 bin/

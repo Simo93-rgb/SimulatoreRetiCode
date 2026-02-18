@@ -10,7 +10,7 @@ package sim.core;
  */
 public class Event implements Comparable<Event> {
     private final EventType type;
-    private final double time;
+    final double time; // Package-private per accesso da EventList
     private final Customer customer; // Può essere null per alcuni tipi di evento
 
     // Campi per Splay Tree (usati da EventList)
