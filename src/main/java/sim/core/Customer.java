@@ -10,6 +10,7 @@ package sim.core;
 public class Customer {
     private final long id;
     private final double arrivalTime;
+    private double serviceTime;  // Tempo servizio (settato quando inizia servizio)
 
     /**
      * Crea un nuovo customer.
@@ -20,6 +21,7 @@ public class Customer {
     public Customer(long id, double arrivalTime) {
         this.id = id;
         this.arrivalTime = arrivalTime;
+        this.serviceTime = 0.0;
     }
 
     /**
@@ -34,6 +36,22 @@ public class Customer {
      */
     public double getArrivalTime() {
         return arrivalTime;
+    }
+
+    /**
+     * Imposta tempo di servizio ricevuto.
+     *
+     * @param serviceTime durata servizio
+     */
+    public void setServiceTime(double serviceTime) {
+        this.serviceTime = serviceTime;
+    }
+
+    /**
+     * @return tempo di servizio ricevuto
+     */
+    public double getServiceTime() {
+        return serviceTime;
     }
 
     /**

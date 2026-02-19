@@ -52,17 +52,21 @@ public class CustomerQueue {
      */
     private synchronized void grow() {
         Customer[] newQueue = new Customer[2 * queue.length];
+        int size = size();
 
         if (back >= front) {
             // Caso semplice: elementi contigui
-            System.arraycopy(queue, front, newQueue, front, back - front);
+            System.arraycopy(queue, front, newQueue, 0, size);
         } else {
             // Caso circolare: elementi wrappati
-            System.arraycopy(queue, front, newQueue, front, queue.length - front);
-            System.arraycopy(queue, 0, newQueue, queue.length, back);
-            back = front + queue.length;
+            int firstPart = queue.length - front;
+            System.arraycopy(queue, front, newQueue, 0, firstPart);
+            System.arraycopy(queue, 0, newQueue, firstPart, back);
         }
 
+        // Reset front e back
+        front = 0;
+        back = size;
         queue = newQueue;
     }
 
