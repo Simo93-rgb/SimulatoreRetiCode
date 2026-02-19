@@ -206,6 +206,112 @@ public class SimulationRunner {
         public String toString() {
             return getReport();
         }
+
+        /**
+         * Risultato intervallo di confidenza.
+         */
+        public static class ConfidenceInterval {
+            private final double mean;
+            private final double lowerBound;
+            private final double upperBound;
+            private final double halfWidth;
+            private final double relativeError;
+
+            public ConfidenceInterval(double mean, double lowerBound, double upperBound) {
+                this.mean = mean;
+                this.lowerBound = lowerBound;
+                this.upperBound = upperBound;
+                this.halfWidth = (upperBound - lowerBound) / 2.0;
+                this.relativeError = mean != 0 ? Math.abs(halfWidth / mean) : 0.0;
+            }
+
+            public double getMean() { return mean; }
+            public double getLowerBound() { return lowerBound; }
+            public double getUpperBound() { return upperBound; }
+            public double getHalfWidth() { return halfWidth; }
+
+            /**
+             * Errore relativo: |semiampiezza / media|
+             *
+             * Indica precisione relativa della stima.
+             * Tipicamente si richiede < 0.05 (5%) per buona precisione.
+             */
+            public double getRelativeError() { return relativeError; }
+
+            @Override
+            public String toString() {
+                return String.format("%.4f ∈ [%.4f, %.4f] (RE=%.2f%%)",
+                    mean, lowerBound, upperBound, relativeError * 100);
+            }
+        }
+
+        /**
+         * Calcola quantile distribuzione t-Student.
+         *
+         * Tabella per α=0.05 (IC 95%). Per df > 30 usa approssimazione normale.
+         */
+        private static double getTStudentQuantile(double alpha, int degreesOfFreedom) {
+            if (alpha != 0.05) {
+                throw new UnsupportedOperationException(
+                    "Solo IC 95% (alpha=0.05) supportato");
+            }
+
+            if (degreesOfFreedom > 30) {
+                return 1.96; // z per grandi campioni
+            }
+
+            // Tabella t-Student (α/2 = 0.025, two-tailed)
+            double[] tTable = {
+                0, 12.706, 4.303, 3.182, 2.776, 2.571,
+                2.447, 2.365, 2.306, 2.262, 2.228,
+                2.201, 2.179, 2.160, 2.145, 2.131,
+                2.120, 2.110, 2.101, 2.093, 2.086,
+                2.080, 2.074, 2.069, 2.064, 2.060,
+                2.056, 2.052, 2.048, 2.045, 2.042, 2.040
+            };
+
+            return degreesOfFreedom < tTable.length ? tTable[degreesOfFreedom] : 1.96;
+        }
+
+        /**
+         * Calcola IC per un indice generico.
+         *
+         * Formula: X̄ ± t_{α/2,R-1} · (S/√R)
+         */
+        private ConfidenceInterval getConfidenceInterval(
+                java.util.function.ToDoubleFunction<Integer> extractor) {
+
+            double mean = getMean(extractor);
+            double stdDev = getStdDev(extractor);
+
+            int df = numReplicas - 1;
+            double tValue = getTStudentQuantile(0.05, df);
+            double standardError = stdDev / Math.sqrt(numReplicas);
+            double halfWidth = tValue * standardError;
+
+            return new ConfidenceInterval(mean, mean - halfWidth, mean + halfWidth);
+        }
+
+        // ========== Intervalli di Confidenza (IC 95%) ==========
+
+        public ConfidenceInterval getConfidenceIntervalThroughput() {
+            return getConfidenceInterval(i -> replicaStats[i].getThroughput(clockTimes[i]));
+        }
+
+        public ConfidenceInterval getConfidenceIntervalUtilization() {
+            return getConfidenceInterval(i -> replicaStats[i].getUtilization(clockTimes[i]));
+        }
+
+        public ConfidenceInterval getConfidenceIntervalResponseTime() {
+            return getConfidenceInterval(i -> replicaStats[i].getMeanResponseTime());
+        }
+
+        public ConfidenceInterval getConfidenceIntervalQueueLength() {
+            return getConfidenceInterval(i -> replicaStats[i].getMeanQueueLength(clockTimes[i]));
+        }
+
+        public ConfidenceInterval getConfidenceIntervalSystemSize() {
+            return getConfidenceInterval(i -> replicaStats[i].getMeanSystemSize(clockTimes[i]));
+        }
     }
 }
-
