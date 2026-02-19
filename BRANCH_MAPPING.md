@@ -66,23 +66,27 @@ Questo file documenta la corrispondenza tra i branch Git e i punti della consegn
    - Verifica correlazione tra stream 0 e stream 1 → ≈ 0
    - Test periodo generatore (Leemis: $2^{31} - 1$)
 
-**File da creare**:
-- `src/main/java/sim/SeedManager.java`
-- `src/test/java/sim/SeedManagerTest.java`
-- `docs/punto2.md` (relazione tecnica)
+**File implementati**:
+- `src/main/java/sim/SeedManager.java` ✅
+- `src/test/java/sim/SeedManagerTest.java` ✅ (13 test)
+- `docs/punto2.md` ✅ (relazione accademica)
 
-**Stato**: **DA IMPLEMENTARE** (branch creato, vuoto)
+**Stato**: ✅ **COMPLETATO** - Merged in `main`
+
+**Commit finale**: `fefbf44`
 
 ---
 
-### ⬜ Punto 3 — Simulatore + Repliche (Branch: `punto3`)
+### 🔄 Punto 3 — Simulatore + Repliche (Branch: `punto3-final`)
 
 **Requisiti**:
 - Simulatore coda singola M/M/1 event-driven
 - Metodo delle prove ripetute (R run con semi diversi)
 - Calcolo indici: throughput, utilization, tempo medio, lunghezza coda
 
-**Nota**: Il branch `punto3` parte da `punto3-prep` che contiene già l'architettura event-driven (Event, EventList, CustomerQueue) implementata come **preparazione tecnica**.
+**Nota**: Il branch `punto3-final` contiene:
+- Punto 1 + Punto 2 (merged da `main`)
+- Architettura event-driven da `punto3-prep` (Event, EventList, CustomerQueue)
 
 **File da creare**:
 - `src/main/java/sim/MMMOneSimulator.java`
