@@ -8,16 +8,16 @@ Questo file documenta la corrispondenza tra i branch Git e i punti della consegn
 
 ## 🗂️ Branch Organizzati per Punto Consegna
 
-| Branch Git | Punto Consegna | Descrizione | Stato |
-|------------|----------------|-------------|-------|
+| Branch Git | Punto Consegna | Descrizione | Stato            |
+|------------|----------------|-------------|------------------|
 | `punto1` | **Punto 1** | Generazione numeri casuali (4 distribuzioni) | ✅ **COMPLETATO** |
-| `punto2` | **Punto 2** | Gestione semi distanziati + stream indipendenti | ⬜ **DA FARE** |
-| `punto3` | **Punto 3** | Simulatore M/M/1 + metodo repliche ripetute | ⬜ In preparazione |
-| `punto4` | **Punto 4** | Stime puntuali/intervallari + IC | ⬜ Futuro |
-| `punto5` | **Punto 5** | Validazione vs JMT (M/M/1, M/G/1) | ⬜ Futuro |
-| `punto6` | **Punto 6** | Sistema chiuso (Q0-Q1-Q2, N clienti) | ⬜ Futuro |
-| `punto7` | **Punto 7** | Sistema misto (classe aperta + chiusa) | ⬜ Futuro |
-| `punto8` | **Punto 8** | Relazione finale + presentazione | ⬜ Futuro |
+| `punto2` | **Punto 2** | Gestione semi distanziati + stream indipendenti | ✅ **COMPLETATO** |
+| `punto3` | **Punto 3** | Simulatore M/M/1 + metodo repliche ripetute | ⬜ In corso       |
+| `punto4` | **Punto 4** | Stime puntuali/intervallari + IC | ⬜ Futuro         |
+| `punto5` | **Punto 5** | Validazione vs JMT (M/M/1, M/G/1) | ⬜ Futuro         |
+| `punto6` | **Punto 6** | Sistema chiuso (Q0-Q1-Q2, N clienti) | ⬜ Futuro         |
+| `punto7` | **Punto 7** | Sistema misto (classe aperta + chiusa) | ⬜ Futuro         |
+| `punto8` | **Punto 8** | Relazione finale + presentazione | ⬜ Futuro         |
 
 ---
 
@@ -37,13 +37,13 @@ Questo file documenta la corrispondenza tra i branch Git e i punti della consegn
 - `src/main/java/sim/ServiceGenerator.java`
 - `src/test/java/sim/ServiceGeneratorTest.java`
 
-**Relazione**: `docs/step1.md`
+**Relazione**: `docs/punto1.md`
 
 **Commit finale**: `8d4339f`
 
 ---
 
-### ⬜ Punto 2 — Gestione Semi e Stream (Branch: `punto2`)
+### ✅ Punto 2 — Gestione Semi e Stream (Branch: `punto2`) — COMPLETATO
 
 **Requisiti** (da `consegna2025-06.md`):
 > "Aggiungere i metodi per ottenere una lista di semi iniziali sufficientemente distanziati da usare per replicare la stessa simulazione più volte con semi diversi [...] e da usare per gestire sequenze casuali indipendenti per diverse attività in ciascuna esecuzione (es. sequenza dei tempi di inter-arrivo, la sequenza dei tempi di servizio [...]). Potete usare le classi **Rngs e Rvgs**."
@@ -66,23 +66,28 @@ Questo file documenta la corrispondenza tra i branch Git e i punti della consegn
    - Verifica correlazione tra stream 0 e stream 1 → ≈ 0
    - Test periodo generatore (Leemis: $2^{31} - 1$)
 
-**File da creare**:
-- `src/main/java/sim/SeedManager.java`
-- `src/test/java/sim/SeedManagerTest.java`
-- `docs/punto2.md` (relazione tecnica)
+**File implementati**:
+- `src/main/java/sim/SeedManager.java` ✅
+- `src/test/java/sim/SeedManagerTest.java` ✅ (13 test)
+- `docs/punto2.md` ✅ (relazione accademica)
 
-**Stato**: **DA IMPLEMENTARE** (branch creato, vuoto)
+**Stato**: ✅ **COMPLETATO** - Merged in `main`
+
+**Commit finale**: `fefbf44`
 
 ---
 
-### ⬜ Punto 3 — Simulatore + Repliche (Branch: `punto3`)
+### 🔄 Punto 3 — Simulatore + Repliche (Branch: `punto3-final`)
 
 **Requisiti**:
 - Simulatore coda singola M/M/1 event-driven
 - Metodo delle prove ripetute (R run con semi diversi)
 - Calcolo indici: throughput, utilization, tempo medio, lunghezza coda
 
-**Nota**: Il branch `punto3` parte da `punto3-prep` che contiene già l'architettura event-driven (Event, EventList, CustomerQueue) implementata come **preparazione tecnica**.
+**Nota**: Il branch `punto3-final` contiene:
+- Punto 1 + Punto 2 (merged da `main`)
+- Architettura event-driven da `punto3-prep` (Event, EventList, CustomerQueue)
+- Documentazione: `docs/architettura-event-driven.md`
 
 **File da creare**:
 - `src/main/java/sim/MMMOneSimulator.java`
