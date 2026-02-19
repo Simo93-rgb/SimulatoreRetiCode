@@ -37,13 +37,13 @@ Questo file documenta la corrispondenza tra i branch Git e i punti della consegn
 - `src/main/java/sim/ServiceGenerator.java`
 - `src/test/java/sim/ServiceGeneratorTest.java`
 
-**Relazione**: `docs/step1.md`
+**Relazione**: `docs/punto1.md`
 
 **Commit finale**: `8d4339f`
 
 ---
 
-### ⬜ Punto 2 — Gestione Semi e Stream (Branch: `punto2`)
+### ✅ Punto 2 — Gestione Semi e Stream (Branch: `punto2`) — COMPLETATO
 
 **Requisiti** (da `consegna2025-06.md`):
 > "Aggiungere i metodi per ottenere una lista di semi iniziali sufficientemente distanziati da usare per replicare la stessa simulazione più volte con semi diversi [...] e da usare per gestire sequenze casuali indipendenti per diverse attività in ciascuna esecuzione (es. sequenza dei tempi di inter-arrivo, la sequenza dei tempi di servizio [...]). Potete usare le classi **Rngs e Rvgs**."
