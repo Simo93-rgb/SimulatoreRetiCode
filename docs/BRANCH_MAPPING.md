@@ -8,16 +8,16 @@ Questo file documenta la corrispondenza tra i branch Git e i punti della consegn
 
 ## 🗂️ Branch Organizzati per Punto Consegna
 
-| Branch Git | Punto Consegna | Descrizione | Stato |
-|------------|----------------|-------------|-------|
+| Branch Git | Punto Consegna | Descrizione | Stato            |
+|------------|----------------|-------------|------------------|
 | `punto1` | **Punto 1** | Generazione numeri casuali (4 distribuzioni) | ✅ **COMPLETATO** |
-| `punto2` | **Punto 2** | Gestione semi distanziati + stream indipendenti | ⬜ **DA FARE** |
-| `punto3` | **Punto 3** | Simulatore M/M/1 + metodo repliche ripetute | ⬜ In preparazione |
-| `punto4` | **Punto 4** | Stime puntuali/intervallari + IC | ⬜ Futuro |
-| `punto5` | **Punto 5** | Validazione vs JMT (M/M/1, M/G/1) | ⬜ Futuro |
-| `punto6` | **Punto 6** | Sistema chiuso (Q0-Q1-Q2, N clienti) | ⬜ Futuro |
-| `punto7` | **Punto 7** | Sistema misto (classe aperta + chiusa) | ⬜ Futuro |
-| `punto8` | **Punto 8** | Relazione finale + presentazione | ⬜ Futuro |
+| `punto2` | **Punto 2** | Gestione semi distanziati + stream indipendenti | ✅ **COMPLETATO** |
+| `punto3` | **Punto 3** | Simulatore M/M/1 + metodo repliche ripetute | ⬜ In corso       |
+| `punto4` | **Punto 4** | Stime puntuali/intervallari + IC | ⬜ Futuro         |
+| `punto5` | **Punto 5** | Validazione vs JMT (M/M/1, M/G/1) | ⬜ Futuro         |
+| `punto6` | **Punto 6** | Sistema chiuso (Q0-Q1-Q2, N clienti) | ⬜ Futuro         |
+| `punto7` | **Punto 7** | Sistema misto (classe aperta + chiusa) | ⬜ Futuro         |
+| `punto8` | **Punto 8** | Relazione finale + presentazione | ⬜ Futuro         |
 
 ---
 
@@ -87,6 +87,7 @@ Questo file documenta la corrispondenza tra i branch Git e i punti della consegn
 **Nota**: Il branch `punto3-final` contiene:
 - Punto 1 + Punto 2 (merged da `main`)
 - Architettura event-driven da `punto3-prep` (Event, EventList, CustomerQueue)
+- Documentazione: `docs/architettura-event-driven.md`
 
 **File da creare**:
 - `src/main/java/sim/MMMOneSimulator.java`

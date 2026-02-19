@@ -13,11 +13,11 @@ Tutta la documentazione si trova in [`docs/`](docs/):
 - ✅ **[`punto2.md`](docs/punto2.md)** - Semi distanziati + stream
 - 🔄 **`punto3.md`** - Simulatore M/M/1 + repliche (in corso)
 ### Documentazione Tecnica
-- **[`step2a.md`](docs/step2a.md)** - Architettura event-driven
+- **[`architettura-event-driven.md`](docs/architettura-event-driven.md)** - Architettura event-driven
 - **[`BRANCH_MAPPING.md`](docs/BRANCH_MAPPING.md)** - Mapping branch ↔ punti
 ---
 ## 🚀 Build
 ```bash
-mvn clean test  # Compila ed esegui test (17 test, 100% pass)
+mvn clean test
 ```
 **Test totali**: 17 (punto1: 4, punto2: 13)
