@@ -64,14 +64,14 @@ M/M/1 = Markovian arrivals / Markovian service / 1 server
 
 **Tabella Risultati**:
 
-| Indice | Teoria | Simulatore (IC 95%) | JMT | Δ% Sim-JMT |
-|--------|--------|---------------------|-----|------------|
-| Throughput (X) | 0.800 | ___ ∈ [___, ___] | ___ | ___% |
-| Utilizzo (ρ) | 0.800 | ___ ∈ [___, ___] | ___ | ___% |
-| E[T] (s) | 5.000 | ___ ∈ [___, ___] | ___ | ___% |
-| E[W] (s) | 4.000 | ___ ∈ [___, ___] | ___ | ___% |
-| E[N] | 4.000 | ___ ∈ [___, ___] | ___ | ___% |
-| E[Nq] | 3.200 | ___ ∈ [___, ___] | ___ | ___% |
+| Indice | Teoria | Simulatore (IC 95%) | JMT (IC 95%) | Δ% Medie |
+|--------|--------|---------------------|--------------|----------|
+| Throughput (X) | 0.800 | 0.7995 ∈ [0.7960, 0.8030] | 0.8000 ∈ [0.7768, 0.8245] | 0.06% |
+| Utilizzo (ρ) | 0.800 | 0.7994 ∈ [0.7950, 0.8039] | 0.7808 ∈ [0.7715, 0.8101] | 2.38% |
+| E[T] (s) | 5.000 | 4.9712 ∈ [4.7836, 5.1588] | 4.8881 ∈ [4.1235, 5.8997] | 1.70% |
+| E[W] (s) | 4.000 | 3.9712 ∈ [3.7836, 4.1588] | 3.3146 ∈ [-0.5092, 7.3199] | 16.53% |
+| E[N] | 4.000 | 3.9771 ∈ [3.8198, 4.1344] | 3.9593 ∈ [3.1162, 4.8360] | 0.45% |
+| E[Nq] | 3.200 | 3.1777 ∈ [3.0240, 3.3314] | _(N - ρ ≈ 3.18)_ | ≈0% |
 
 **Note JMT**:
 - Tempo simulazione: 100,000 customer (o tempo equivalente)
@@ -93,11 +93,11 @@ M/M/1 = Markovian arrivals / Markovian service / 1 server
 
 **Tabella Risultati**:
 
-| Indice | Teoria | Simulatore (IC 95%) | JMT | Δ% Sim-JMT |
-|--------|--------|---------------------|-----|------------|
-| Utilizzo (ρ) | 0.500 | ___ ∈ [___, ___] | ___ | ___% |
-| E[T] (s) | 2.000 | ___ ∈ [___, ___] | ___ | ___% |
-| E[N] | 1.000 | ___ ∈ [___, ___] | ___ | ___% |
+| Indice | Teoria | Simulatore (IC 95%) | JMT (IC 95%) | Δ% Medie |
+|--------|--------|---------------------|--------------|----------|
+| Utilizzo (ρ) | 0.900 | 0.8990 ∈ [0.8939, 0.9041] | ___ ∈ [___, ___] | ___% |
+| E[T] (s) | 10.000 | 9.6930 ∈ [8.9873, 10.3988] | ___ ∈ [___, ___] | ___% |
+| E[N] | 9.000 | 8.7300 ∈ [8.0776, 9.3824] | ___ ∈ [___, ___] | ___% |
 
 ---
 
@@ -116,9 +116,9 @@ M/M/1 = Markovian arrivals / Markovian service / 1 server
 
 | Indice | Teoria | Simulatore (IC 95%) | JMT | Δ% Sim-JMT |
 |--------|--------|---------------------|-----|------------|
-| Utilizzo (ρ) | 0.900 | ___ ∈ [___, ___] | ___ | ___% |
-| E[T] (s) | 10.000 | ___ ∈ [___, ___] | ___ | ___% |
-| E[N] | 9.000 | ___ ∈ [___, ___] | ___ | ___% |
+| Utilizzo (ρ) | 0.900 | 0.8990 ∈ [0.8939, 0.9041] | ___ | ___% |
+| E[T] (s) | 10.000 | 9.6930 ∈ [8.9873, 10.3988] | ___ | ___% |
+| E[N] | 9.000 | 8.7300 ∈ [8.0776, 9.3824] | ___ | ___% |
 
 **Nota**: Con ρ alto, serve più tempo simulazione per raggiungere regime stazionario.
 
@@ -126,11 +126,10 @@ M/M/1 = Markovian arrivals / Markovian service / 1 server
 
 ## Impatto Variabilità (come cap. 4 Leemis-Park)
 
-### Esperimento 4: M/D/1 (Servizio Deterministico)
+| Utilizzo (ρ) | 0.900 | ___ ∈ [___, ___] | ___ | ___% |
+| E[T] (s) | 10.000 | ___ ∈ [___, ___] | ___ | ___% |
+| E[N] | 9.000 | ___ ∈ [___, ___] | ___ | ___% |
 
-**Parametri**:
-- Arrivi: Exponential, λ = 0.8 arr/s
-- Servizi: **Deterministic**, D = 1.0 s (zero variabilità)
 - Utilizzo: ρ = 0.8
 
 **Indici teorici M/D/1** (Pollaczek-Khinchine):
