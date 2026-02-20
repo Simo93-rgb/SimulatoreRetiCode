@@ -77,6 +77,7 @@ M/M/1 = Markovian arrivals / Markovian service / 1 server
 - Tempo simulazione: 100,000 customer (o tempo equivalente)
 - Confidence Interval: 95% (se disponibile in JMT)
 - Warm-up: Scartare primi 1000 customer (transient)
+- **E[Nq]** può anche essere calcolato come $E[Nq] = E[W] * X$ per **Legge di Little**.
 
 ---
 
@@ -106,6 +107,7 @@ M/M/1 = Markovian arrivals / Markovian service / 1 server
 - **Validazione eccellente**: Δ < 2% su tutti gli indici (tranne Nq derivato)
 - **Simulatore**: E[T] = 2.0000 (match perfetto teoria!)
 - **IC JMT più ampi** ma accettabili (RE ≈ 1-3%)
+- **E[Nq]** può anche essere calcolato come $E[Nq] = E[W] * X = 0.9960 * 0.4986 = 0.4966$ per **Legge di Little**
 
 ---
 
@@ -124,13 +126,20 @@ M/M/1 = Markovian arrivals / Markovian service / 1 server
 
 | Indice | Teoria | Simulatore (IC 95%) | JMT (IC 95%) | Δ% Medie |
 |--------|--------|---------------------|--------------|----------|
-| Utilizzo (ρ) | 0.900 | 0.8997 ∈ [0.8980, 0.9015] | ___ ∈ [___, ___] | ___% |
-| E[T] (s) | 10.000 | 9.8209 ∈ [9.5487, 10.0930] | ___ ∈ [___, ___] | ___% |
-| E[N] | 9.000 | 8.8366 ∈ [8.5821, 9.0911] | ___ ∈ [___, ___] | ___% |
+| Throughput (X) | 0.900 | 0.8996 ∈ [0.8981, 0.9011] | 0.8946 ∈ [0.8721, 0.9182] | 0.56% |
+| Utilizzo (ρ) | 0.900 | 0.8997 ∈ [0.8980, 0.9015] | 0.8998 ∈ [0.8817, 0.9178] | 0.01% |
+| E[T] (s) | 10.000 | 9.8209 ∈ [9.5487, 10.0930] | 10.1954 ∈ [9.9612, 10.4296] | 3.81% |
+| E[W] (s) | 9.000 | 8.8209 ∈ [8.5487, 9.0930] | 9.2130 ∈ [9.0095, 9.4166] | 4.45% |
+| E[N] | 9.000 | 8.8366 ∈ [8.5821, 9.0911] | 9.1213 ∈ [8.9052, 9.3374] | 3.22% |
+| E[Nq] | 8.100 | 7.9369 ∈ [7.6839, 8.1899] | 8.2415 (Little: W×X) | 3.84% |
 
-**Osservazioni Simulatore**:
-- **Buona aderenza a teoria** anche con ρ alto (Δ < 2%)
-- IC più ampi (RE ≈ 3%) per maggiore variabilità con ρ=0.9
+**Osservazioni**:
+- **Validazione buona** anche con ρ alto: Δ < 4.5%
+- **ρ JMT quasi perfetto**: 0.8998 vs teoria 0.900 (Δ=0.01%)
+- **E[T] leggermente sottostimato** dal simulatore (-1.8% vs teoria)
+- **IC più ampi** con ρ=0.9 (maggiore variabilità): RE ≈ 2-3%
+- **E[Nq] JMT calcolato via Little**: $8.2415 = 9.2130 \times 0.8946$
+- **Nota**: "Sys n of customer" JMT sembra errato (0.98 invece di ~9), probabilmente dato sbagliato
 
 ---
 
