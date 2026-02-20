@@ -168,14 +168,41 @@ public class MMMOneSimulator {
         currentCustomer = customer;
         stats.setServerBusy(true);
 
-        // Genera tempo servizio (stream SERVICE)
+        // Genera tempo servizio (stream SERVICE) con distribuzione configurata
         rngs.selectStream(StreamType.SERVICE.ordinal());
-        double serviceTime = serviceGen.exponential(config.getMeanService());
+        double serviceTime = generateServiceTime();
         customer.setServiceTime(serviceTime);  // Salva nel customer
 
         // Schedule departure
         Event departure = new Event(EventType.DEPARTURE, clock + serviceTime, customer);
         fel.enqueue(departure);
+    }
+
+    /**
+     * Genera tempo servizio secondo distribuzione configurata.
+     *
+     * @return tempo servizio
+     */
+    private double generateServiceTime() {
+        double mean = config.getMeanService();
+
+        return switch (config.getServiceDistribution()) {
+            case EXPONENTIAL -> serviceGen.exponential(mean);
+
+            case DETERMINISTIC ->
+                // Approssimazione: Uniform[mean-ε, mean+ε] con ε piccolo
+                serviceGen.uniform(mean * 0.9999, mean * 1.0001);
+
+            case ERLANG ->
+                serviceGen.erlang(mean, config.getErlangK());
+
+            case HYPEREXPONENTIAL ->
+                serviceGen.hyperExponential(
+                    config.getHyperP(),
+                    config.getHyperMean1(),
+                    config.getHyperMean2()
+                );
+        };
     }
 
     /**

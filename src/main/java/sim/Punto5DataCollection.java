@@ -82,31 +82,56 @@ public class Punto5DataCollection {
 
     private static void runExperiment4_MD1() {
         System.out.println("--- ESPERIMENTO 4: M/D/1 (Servizio Deterministico) ---");
-        System.out.println("Parametri: λ=0.8, μ=1.0 (servizio costante D=1.0)");
-        System.out.println("Teoria M/D/1: E[T]=3.0, E[Nq]=1.6");
-        System.out.println("NOTA: Implementazione M/D/1 richiede modifica ServiceGenerator");
-        System.out.println("      (usare distribuzione uniforme U[0.999, 1.001] come approssimazione)");
-        System.out.println("SKIP per ora - implementare se necessario\n");
+        System.out.println("Parametri: λ=0.8, servizio D=1.0 (cv²=0)");
+        System.out.println("Teoria M/D/1: E[T]=3.0, E[Nq]=1.6, E[N]=2.4\n");
+
+        SimulationConfig config = new SimulationConfig(
+            0.8, 1.0, CUSTOMERS_PER_REPLICA,
+            SimulationConfig.ServiceDistribution.DETERMINISTIC,
+            0, 0, 0, 0  // parametri inutilizzati per DETERMINISTIC
+        );
+        ReplicationResults results = new SimulationRunner(config, NUM_REPLICAS).runReplications();
+
+        printResults(results);
+        System.out.println();
     }
 
     private static void runExperiment5_MH2() {
         System.out.println("--- ESPERIMENTO 5: M/H₂/1 (Servizio Iperesponenziale) ---");
-        System.out.println("Parametri: λ=0.8, servizio Hyperexp(p=0.8, μ1=0.8333, μ2=5.0)");
-        System.out.println("Media servizio: E[S]=1.0, Cs²>1");
+        System.out.println("Parametri: λ=0.8, servizio Hyperexp(p=0.5, mean1=0.5, mean2=1.5)");
+        System.out.println("Media servizio: E[S]=1.0, cv²>1");
         System.out.println("Previsione: E[T] > 5.0 (M/M/1)\n");
-        System.out.println("NOTA: Implementazione M/H₂/1 richiede integrazione Hyperexponential in simulatore");
-        System.out.println("      ServiceGenerator.hyperexponential() già disponibile (Punto 1)");
-        System.out.println("SKIP per ora - implementare se necessario\n");
+
+        SimulationConfig config = new SimulationConfig(
+            0.8, 1.0, CUSTOMERS_PER_REPLICA,
+            SimulationConfig.ServiceDistribution.HYPEREXPONENTIAL,
+            0,           // erlangK (inutilizzato)
+            0.5,         // hyperP
+            0.5,         // hyperMean1
+            1.5          // hyperMean2  → E[S] = 0.5*0.5 + 0.5*1.5 = 1.0
+        );
+        ReplicationResults results = new SimulationRunner(config, NUM_REPLICAS).runReplications();
+
+        printResults(results);
+        System.out.println();
     }
 
     private static void runExperiment6_MEk() {
         System.out.println("--- ESPERIMENTO 6: M/Ek/1 (Servizio Erlang) ---");
         System.out.println("Parametri: λ=0.8, servizio Erlang(k=4, mean=1.0)");
-        System.out.println("Cs²=1/4=0.25");
+        System.out.println("cv²=1/k=0.25");
         System.out.println("Previsione: E[T] < 5.0 (M/M/1)\n");
-        System.out.println("NOTA: Implementazione M/Ek/1 richiede integrazione Erlang in simulatore");
-        System.out.println("      ServiceGenerator.erlang() già disponibile (Punto 1)");
-        System.out.println("SKIP per ora - implementare se necessario\n");
+
+        SimulationConfig config = new SimulationConfig(
+            0.8, 1.0, CUSTOMERS_PER_REPLICA,
+            SimulationConfig.ServiceDistribution.ERLANG,
+            4,           // erlangK
+            0, 0, 0      // hyper params (inutilizzati)
+        );
+        ReplicationResults results = new SimulationRunner(config, NUM_REPLICAS).runReplications();
+
+        printResults(results);
+        System.out.println();
     }
 
     private static void printResults(ReplicationResults results) {

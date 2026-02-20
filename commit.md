@@ -1,115 +1,166 @@
-# Punto 4 — Stime Intervallari e Errore Relativo
-**Branch**: `punto4`  
-**Data**: 2026-02-19
+# Punto 5 — Validazione vs JMT con Variabilità Servizio
+**Branch**: `punto5`  
+**Data**: 2026-02-20
 ---
 ## Obiettivo
-Implementare calcolo **intervalli di confidenza (IC)** al 95% e **errore relativo** per valutare precisione delle stime ottenute dalle R repliche indipendenti.
-**Requisito consegna** (punto 4):
-> "A partire dai risultati ottenuti dagli R run calcolare la stima puntuale e intervallare dei valori medi dei diversi indici. Valutare l'errore relativo e se necessario incrementare il numero di run oppure ripeterli estendendoli."
+Validare simulatore confrontando risultati con JMT su modelli M/M/1 e **variando distribuzione servizio** per studiare impatto variabilità (Cap. 4 Leemis-Park).
+**Requisito consegna** (punto 5):
+> "Confrontare i risultati con JMT effettuando più esperimenti **al variare della distribuzione di probabilità** di tempi di servizio (impatto variabilità come cap. 4 Leemis-Park)."
 ---
-## Implementazione
-### 1. Classe `ConfidenceInterval`
-Aggiunta inner class statica in `ReplicationResults`:
-**Campi**:
-- `mean`: Stima puntuale X̄
-- `lowerBound`: Limite inferiore IC
-- `upperBound`: Limite superiore IC
-- `halfWidth`: Semiampiezza Δ
-- `relativeError`: |Δ / X̄| (precisione relativa)
-**Metodi**:
-- `getRelativeError()`: Calcola RE con gestione mean=0
-- `toString()`: Formato `mean ∈ [lower, upper] (RE=X.XX%)`
-### 2. Calcolo IC con t-Student
-**Formula implementata**:
-```
-IC = X̄ ± t_{α/2, R-1} · (S / √R)
-```
-**Tabella t-Student**:
-- Hardcoded per α=0.05 (IC 95%)
-- df da 1 a 30 (valori tabulati)
-- df > 30: Approssimazione normale (z = 1.96)
-**Metodi privati**:
-- `getTStudentQuantile(alpha, df)`: Lookup tabella t
-- `getConfidenceInterval(extractor)`: Calcolo IC generico
-### 3. Metodi Pubblici Aggiunti
+## Implementazione Tecnica
+### 1. Estensione `SimulationConfig`
+Aggiunto enum `ServiceDistribution` e costruttore sovraccaricato:
 ```java
-// Intervalli di confidenza per tutti gli indici
-public ConfidenceInterval getConfidenceIntervalThroughput()
-public ConfidenceInterval getConfidenceIntervalUtilization()
-public ConfidenceInterval getConfidenceIntervalResponseTime()
-public ConfidenceInterval getConfidenceIntervalQueueLength()
-public ConfidenceInterval getConfidenceIntervalSystemSize()
+public enum ServiceDistribution {
+    EXPONENTIAL,      // M/M/1 (cv=1, default)
+    DETERMINISTIC,    // M/D/1 (cv≈0)
+    ERLANG,           // M/Ek/1 (cv=1/√k)
+    HYPEREXPONENTIAL  // M/H₂/1 (cv>1)
+}
+```
+**Costruttore default** (retrocompatibilità):
+```java
+public SimulationConfig(double λ, double μ, long N) {
+    this(λ, μ, N, ServiceDistribution.EXPONENTIAL, 0, 0, 0, 0);
+}
+```
+**Costruttore esteso**:
+```java
+public SimulationConfig(double λ, double μ, long N,
+                         ServiceDistribution dist,
+                         int erlangK, double hyperP, 
+                         double hyperMean1, double hyperMean2)
+```
+**Parametri aggiuntivi**:
+- `erlangK`: Parametro k (solo per ERLANG)
+- `hyperP`, `hyperMean1`, `hyperMean2`: Parametri Hyperexponential
+---
+### 2. Modifico `MMMOneSimulator.startService()`
+Aggiunto metodo `generateServiceTime()` con switch su tipo distribuzione:
+```java
+private double generateServiceTime() {
+    double mean = config.getMeanService();
+    return switch (config.getServiceDistribution()) {
+        case EXPONENTIAL -> serviceGen.exponential(mean);
+        case DETERMINISTIC -> 
+            // Approssimazione: Uniform[mean*0.9999, mean*1.0001]
+            serviceGen.uniform(mean * 0.9999, mean * 1.0001);
+        case ERLANG -> 
+            serviceGen.erlang(mean, config.getErlangK());
+        case HYPEREXPONENTIAL -> 
+            serviceGen.hyperExponential(
+                config.getHyperP(),
+                config.getHyperMean1(),
+                config.getHyperMean2()
+            );
+    };
+}
+```
+**Nota**: Usa distribuzioni **già implementate** in `ServiceGenerator` (Punto 1).
+---
+### 3. Aggiornamento `Punto5DataCollection`
+Implementati Esperimenti 4, 5, 6:
+**Esperimento 4 - M/D/1** (cv²=0):
+```java
+new SimulationConfig(0.8, 1.0, 100k, DETERMINISTIC, 0, 0, 0, 0);
+```
+**Esperimento 5 - M/H₂/1** (cv²>1):
+```java
+new SimulationConfig(0.8, 1.0, 100k, HYPEREXPONENTIAL, 
+                     0, 0.5, 0.5, 1.5);
+// E[S] = 0.5*0.5 + 0.5*1.5 = 1.0 ✅
+```
+**Esperimento 6 - M/Ek/1** (cv²=0.25):
+```java
+new SimulationConfig(0.8, 1.0, 100k, ERLANG, 4, 0, 0, 0);
+// cv² = 1/k = 1/4 = 0.25
 ```
 ---
-## Test Suite (9 test)
-**File**: `src/test/java/sim/ConfidenceIntervalTest.java`
-**Test implementati**:
-1. ✅ `testICContainsTheoreticalUtilization`: IC contiene ρ teorico M/M/1
-2. ✅ `testICContainsTheoreticalResponseTime`: IC contiene E[T] teorico
-3. ✅ `testRelativeErrorDecreasesWithMoreReplicas`: RE ∝ 1/√R
-4. ✅ `testRelativeErrorBelow5Percent`: RE < 5% con R=30
-5. ✅ `testHalfWidthCalculation`: Δ = (upper - lower) / 2
-6. ✅ `testRelativeErrorCalculation`: RE = |Δ / X̄|
-7. ✅ `testRelativeErrorWithZeroMean`: Gestione edge case mean=0
-8. ✅ `testToStringFormat`: Output formattato corretto
-9. ✅ `testCoverageRate`: Coverage empirico ≈ 95% (50 esperimenti)
-**Tutti i test passano**: 79/79 (70 precedenti + 9 nuovi)
+## Risultati Simulatore (6 Esperimenti)
+### Exp 1-3: M/M/1 Baseline
+| Exp | ρ | E[T] Sim | E[T] Teoria | Δ% |
+|-----|---|----------|-------------|-----|
+| 1 | 0.8 | 4.97 | 5.00 | 0.6% |
+| 2 | 0.5 | 2.00 | 2.00 | 0.0% |
+| 3 | 0.9 | 9.82 | 10.00 | 1.8% |
+**Validazione**: ✅ Δ < 2% su M/M/1
 ---
-## Validazione Statistica
-### Coverage IC al 95%
-**Test**: 50 esperimenti indipendenti (R=15 repliche ciascuno)
-**Risultato**: 92% (46/50) IC contengono media teorica ✅
-**Interpretazione**: Coverage osservato ∈ [85%, 100%] è coerente con IC 95% teorico (variabilità campionaria accettabile).
-### Convergenza Errore Relativo
-**Verifica**: RE diminuisce con √R
-| R (repliche) | RE medio | Riduzione teorica |
-|--------------|----------|-------------------|
-| 10 | ~7.0% | Baseline |
-| 30 | ~2.5% | ÷ √3 ≈ ÷1.73 ✅ |
+### Exp 4: M/D/1 (Deterministic, cv²≈0)
+**Parametri**: λ=0.8, D=1.0 (approx Uniform[0.9999, 1.0001])
+**Risultati**:
+```
+E[T]: 2.9870 ∈ [2.9645, 3.0095]  (Teoria: 3.0)  Δ=0.43%
+E[Nq]: 1.5891 ∈ [1.5692, 1.6089]  (Teoria: 1.6)  Δ=0.68%
+E[N]: 2.3887 ∈ [2.3679, 2.4096]  (Teoria: 2.4)  Δ=0.47%
+```
+**Validazione**: ✅ Match perfetto teoria M/D/1 (Pollaczek-Khinchine)  
+**Vs M/M/1**: E[T] ridotto del **40%** (3.0 vs 5.0) con stessa ρ!
 ---
-## Documentazione
-**File**: `docs/punto4.md`
-**Contenuti**:
-- Formula IC con t-Student
-- Tabella quantili t per vari df
-- Definizione e criteri errore relativo
-- Test empirico coverage 95%
-- Esempi pratici (utilizzo, response time)
-- Criteri per aumentare repliche (RE > 5%)
-**Stile**: Accademico ma conciso, focus su risultati sperimentali.
+### Exp 5: M/H₂/1 (Hyperexponential, cv²>1)
+**Parametri**: λ=0.8, Hyperexp(p=0.5, m1=0.5, m2=1.5)
+**Risultati**:
+```
+E[T]: 5.9904 ∈ [5.9243, 6.0565]
+E[Nq]: 3.9902 ∈ [3.9357, 4.0447]
+E[N]: 4.7905 ∈ [4.7345, 4.8465]
+ρ: 0.8003 ∈ [0.7984, 0.8022]
+```
+**Validazione**: ✅ E[T] > M/M/1 (5.99 vs 4.97) → Impatto alta variabilità  
+**Vs M/M/1**: E[T] aumentato del **20%** con stessa ρ e media servizio!
 ---
-## File Modificati/Creati
+### Exp 6: M/Ek/1 (Erlang-4, cv²=0.25)
+**Parametri**: λ=0.8, Erlang(k=4, mean=1.0)
+**Risultati**:
+```
+E[T]: 3.4920 ∈ [3.4550, 3.5289]
+E[Nq]: 1.9928 ∈ [1.9615, 2.0240]
+E[N]: 2.7926 ∈ [2.7603, 2.8249]
+```
+**Validazione**: ✅ E[T] tra M/D/1 e M/M/1 (3.49 vs 3.0 vs 4.97)  
+**Vs M/M/1**: E[T] ridotto del **30%** (3.49 vs 4.97)
+---
+## Confronto Impatto Variabilità
+**Stesso ρ=0.8, stessa E[S]=1.0, SOLO varianza cambia**:
+| Distribuzione | cv² | E[T] | Δ vs M/M/1 |
+|---------------|-----|------|------------|
+| **Deterministic** | ~0 | 2.99 | -40% |
+| **Erlang-4** | 0.25 | 3.49 | -30% |
+| **Exponential** | 1.0 | 4.97 | baseline |
+| **Hyperexp** | >1 | 5.99 | +20% |
+**Conclusione chiave**: **Varianza servizio impatta drasticamente E[T]** anche con media e ρ identici!
+Questo conferma Cap. 4 Leemis-Park: "conoscere solo media e ρ non basta per prevedere prestazioni".
+---
+## Test e Retrocompatibilità
+**Test totali**: 79/79 (100% pass) ✅
+**Retrocompatibilità garantita**:
+- Costruttore default `SimulationConfig(λ, μ, N)` → EXPONENTIAL
+- Tutti i test esistenti passano senza modifiche
+- Nessuna breaking change
+---
+## File Modificati
 ```
 src/main/java/sim/
-└── SimulationRunner.java              # Esteso con IC e RE
-src/test/java/sim/
-└── ConfidenceIntervalTest.java        # 9 nuovi test
+├── SimulationConfig.java          # +enum ServiceDistribution, +parametri
+├── MMMOneSimulator.java            # +generateServiceTime()
+└── Punto5DataCollection.java      # +Exp 4,5,6 implementati
 docs/
-└── punto4.md                          # Relazione accademica
+└── punto5.md                       # Tabelle dati (compilate dall'utente)
 ```
 ---
-## Comandi Test
-```bash
-# Compila ed esegui tutti i test
-mvn clean test
-# Test solo punto4
-mvn test -Dtest=ConfidenceIntervalTest
-# Risultato: Tests run: 79, Failures: 0, Errors: 0 ✅
-```
+## Preparazione per JMT
+L'utente eseguirà esperimenti JMT con:
+- **Exp 4**: Service Distribution = Deterministic (D=1.0)
+- **Exp 5**: Service Distribution = Hyperexponential (parametri specificati)
+- **Exp 6**: Service Distribution = Erlang (k=4, mean=1.0)
+Dopo raccolta dati JMT, completeremo tabelle in `punto5.md` con confronto quantitativo.
 ---
-## Collegamenti Documentazione
-- **Teoria IC**: Già documentata in [docs/punto2.md](docs/punto2.md) sezione "Implicazioni per il Metodo delle Repliche"
-- **Implementazione simulatore**: [docs/punto3.md](docs/punto3.md)
-- **Prossimo**: [Punto 5] Validazione vs JMT
+## Note Tecniche
+**Bug fix Hyperexponential**:
+- Parametri iniziali (p=0.8, m1=0.8333, m2=5.0) davano E[S]=1.67 → ρ>1!
+- Corretti a (p=0.5, m1=0.5, m2=1.5) → E[S]=1.0 ✅
+**Approssimazione Deterministic**:
+- JMT supporta "Deterministic" nativo
+- Simulatore usa Uniform[0.9999mean, 1.0001mean] (cv² ≈ 10⁻⁸)
 ---
-## Note Implementative
-**Scelte tecniche**:
-- Tabella t-Student hardcoded (solo α=0.05): Evita dipendenze esterne
-- RE convenzione mean=0: Restituisce 0.0 invece di NaN
-- Inner class statica: Encapsulation pulito, no dipendenze circolari
-**Limitazioni**:
-- Solo IC 95% (α=0.05): Per altri livelli serve estendere tabella
-- Assunzione normalità asintotica: Valida per R > 5-10 (CLT)
----
-**Branch**: punto4  
-**Commit pronto per**: merge in main dopo review
+**Branch**: punto5  
+**Pronto per**: Raccolta dati JMT Exp 4-6, poi completamento relazione
