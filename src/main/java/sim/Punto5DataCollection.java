@@ -11,7 +11,7 @@ import sim.SimulationRunner.ReplicationResults.ConfidenceInterval;
 public class Punto5DataCollection {
 
     private static final int NUM_REPLICAS = 20;
-    private static final int CUSTOMERS_PER_REPLICA = 10000;
+    private static final int CUSTOMERS_PER_REPLICA = 100000;  // 2M customers totali (20×100k)
 
     public static void main(String[] args) {
         System.out.println("=".repeat(80));
@@ -141,4 +141,5 @@ public class Punto5DataCollection {
             ci.getMean(), ci.getLowerBound(), ci.getUpperBound(), ci.getRelativeError() * 100);
     }
 }
+
 
