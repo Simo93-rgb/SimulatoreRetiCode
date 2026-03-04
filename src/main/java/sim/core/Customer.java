@@ -10,7 +10,11 @@ package sim.core;
 public class Customer {
     private final long id;
     private final double arrivalTime;
-    private double serviceTime;  // Tempo servizio (settato quando inizia servizio)
+    private double serviceTime;      // Tempo servizio (settato quando inizia servizio)
+
+    // Timestamp arrivi ai singoli centri (per sistema chiuso multi-centro)
+    private double arrivalTimeAtQ1 = 0.0;
+    private double arrivalTimeAtQ2 = 0.0;
 
     /**
      * Crea un nuovo customer.
@@ -65,6 +69,20 @@ public class Customer {
     public double getResponseTime(double departureTime) {
         return departureTime - arrivalTime;
     }
+
+    // ---- Timestamp per sistema chiuso multi-centro ----
+
+    /** Imposta il tempo di arrivo a Q1. */
+    public void setArrivalTimeAtQ1(double t) { this.arrivalTimeAtQ1 = t; }
+
+    /** @return tempo di arrivo a Q1 */
+    public double getArrivalTimeAtQ1() { return arrivalTimeAtQ1; }
+
+    /** Imposta il tempo di arrivo a Q2. */
+    public void setArrivalTimeAtQ2(double t) { this.arrivalTimeAtQ2 = t; }
+
+    /** @return tempo di arrivo a Q2 */
+    public double getArrivalTimeAtQ2() { return arrivalTimeAtQ2; }
 
     @Override
     public String toString() {
