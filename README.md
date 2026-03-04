@@ -20,6 +20,7 @@ Tutta la documentazione si trova in [`docs/`](docs/):
 - ✅ **[`punto4.md`](docs/punto4.md)** - Stime intervallari e errore relativo (IC 95%)
 - ✅ **[`punto5.md`](docs/punto5.md)** - Validazione vs JMT e impatto variabilità servizio
 - ✅ **[`punto6.md`](docs/punto6.md)** - Sistema chiuso Q0 → Q1 → Q2 (N variabile)
+- ✅ **[`punto7.md`](docs/punto7.md)** - Sistema misto: classe chiusa + classe aperta su Q1
 
 ### Documentazione Tecnica
 - **[`architettura-event-driven.md`](docs/architettura-event-driven.md)** - Architettura event-driven
@@ -38,7 +39,7 @@ mvn compile exec:java "-Dexec.args=punto5"
 mvn compile exec:java "-Dexec.args=punto6"
 ```
 
-**Test totali**: 98 (tutti i punti 1–6)
+**Test totali**: 115 (tutti i punti 1–7)
 
 ---
 
@@ -54,12 +55,17 @@ src/main/java/sim/
 │   └── EventType.java
 ├── runners/                     # Entry point per raccolta dati per punto
 │   ├── Punto5Runner.java
-│   └── Punto6Runner.java
+│   ├── Punto6Runner.java
+│   └── Punto7Runner.java
 ├── Main.java                    # Dispatcher CLI  →  java sim.Main <puntoX>
 ├── ClosedNetworkConfig.java     # Configurazione sistema chiuso
 ├── ClosedNetworkSimulator.java  # Simulatore Q0→Q1→Q2
 ├── ClosedNetworkStatistics.java # Accumulatori sistema chiuso
 ├── ClosedNetworkRunner.java     # Repliche sistema chiuso + IC
+├── MixedNetworkConfig.java      # Configurazione sistema misto
+├── MixedNetworkSimulator.java   # Simulatore classe chiusa + aperta
+├── MixedNetworkStatistics.java  # Accumulatori per classe
+├── MixedNetworkRunner.java      # Repliche sistema misto + IC
 ├── MMMOneSimulator.java         # Simulatore M/M/1 (punti 3–5)
 ├── SeedManager.java             # Semi distanziati + stream
 ├── ServiceGenerator.java        # Generatore distribuzioni (Leemis-Park)

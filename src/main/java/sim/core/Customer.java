@@ -8,24 +8,48 @@ package sim.core;
  * - Customer = entità del dominio ("chi viene processato")
  */
 public class Customer {
+
+    /**
+     * Classe di appartenenza del customer.
+     *
+     * - CLOSED: cliente della classe chiusa (circola tra Q0→Q1→Q2→Q0)
+     * - OPEN:   cliente della classe aperta (arriva dall'esterno, servito solo in Q1, poi esce)
+     *
+     * Default CLOSED per retrocompatibilità con tutti i simulatori precedenti.
+     */
+    public enum CustomerClass { CLOSED, OPEN }
+
     private final long id;
     private final double arrivalTime;
     private double serviceTime;      // Tempo servizio (settato quando inizia servizio)
+    private final CustomerClass customerClass;  // Classe di appartenenza
 
     // Timestamp arrivi ai singoli centri (per sistema chiuso multi-centro)
     private double arrivalTimeAtQ1 = 0.0;
     private double arrivalTimeAtQ2 = 0.0;
 
     /**
-     * Crea un nuovo customer.
+     * Crea un customer della classe chiusa (default, retrocompatibile).
      *
-     * @param id identificativo univoco del customer
-     * @param arrivalTime tempo di arrivo al sistema (clock simulato)
+     * @param id          identificativo univoco
+     * @param arrivalTime tempo di arrivo al sistema
      */
     public Customer(long id, double arrivalTime) {
-        this.id = id;
-        this.arrivalTime = arrivalTime;
-        this.serviceTime = 0.0;
+        this(id, arrivalTime, CustomerClass.CLOSED);
+    }
+
+    /**
+     * Crea un customer con classe esplicita.
+     *
+     * @param id            identificativo univoco
+     * @param arrivalTime   tempo di arrivo al sistema
+     * @param customerClass classe di appartenenza (CLOSED o OPEN)
+     */
+    public Customer(long id, double arrivalTime, CustomerClass customerClass) {
+        this.id            = id;
+        this.arrivalTime   = arrivalTime;
+        this.customerClass = customerClass;
+        this.serviceTime   = 0.0;
     }
 
     /**
@@ -34,6 +58,12 @@ public class Customer {
     public long getId() {
         return id;
     }
+
+    /** @return classe di appartenenza del customer */
+    public CustomerClass getCustomerClass() { return customerClass; }
+
+    /** @return true se il customer appartiene alla classe aperta */
+    public boolean isOpen() { return customerClass == CustomerClass.OPEN; }
 
     /**
      * @return tempo di arrivo al sistema
