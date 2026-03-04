@@ -1,5 +1,7 @@
-package sim;
+package sim.runners;
 
+import sim.SimulationConfig;
+import sim.SimulationRunner;
 import sim.SimulationRunner.ReplicationResults;
 import sim.SimulationRunner.ReplicationResults.ConfidenceInterval;
 
@@ -7,13 +9,18 @@ import sim.SimulationRunner.ReplicationResults.ConfidenceInterval;
  * Raccolta dati per validazione vs JMT (Punto 5).
  *
  * Esegue i 6 esperimenti pianificati e stampa risultati in formato tabellare.
+ * Può essere lanciato direttamente oppure tramite Main con argomento "punto5".
  */
-public class Punto5DataCollection {
+public class Punto5Runner {
 
     private static final int NUM_REPLICAS = 20;
     private static final int CUSTOMERS_PER_REPLICA = 100000;  // 2M customers totali (20×100k)
 
     public static void main(String[] args) {
+        run();
+    }
+
+    public static void run() {
         System.out.println("=".repeat(80));
         System.out.println("PUNTO 5 - RACCOLTA DATI SIMULATORE");
         System.out.println("Configurazione: R=" + NUM_REPLICAS + " repliche, N=" + CUSTOMERS_PER_REPLICA + " customer/replica");
@@ -135,11 +142,11 @@ public class Punto5DataCollection {
     }
 
     private static void printResults(ReplicationResults results) {
-        ConfidenceInterval ciThroughput = results.getConfidenceIntervalThroughput();
-        ConfidenceInterval ciUtilization = results.getConfidenceIntervalUtilization();
+        ConfidenceInterval ciThroughput   = results.getConfidenceIntervalThroughput();
+        ConfidenceInterval ciUtilization  = results.getConfidenceIntervalUtilization();
         ConfidenceInterval ciResponseTime = results.getConfidenceIntervalResponseTime();
-        ConfidenceInterval ciQueueLength = results.getConfidenceIntervalQueueLength();
-        ConfidenceInterval ciSystemSize = results.getConfidenceIntervalSystemSize();
+        ConfidenceInterval ciQueueLength  = results.getConfidenceIntervalQueueLength();
+        ConfidenceInterval ciSystemSize   = results.getConfidenceIntervalSystemSize();
 
         System.out.println("RISULTATI SIMULATORE (IC 95%):");
         System.out.println("  Throughput (X):     " + formatCI(ciThroughput));
@@ -166,5 +173,4 @@ public class Punto5DataCollection {
             ci.getMean(), ci.getLowerBound(), ci.getUpperBound(), ci.getRelativeError() * 100);
     }
 }
-
 
