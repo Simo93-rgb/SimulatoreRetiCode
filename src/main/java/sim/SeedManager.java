@@ -144,7 +144,18 @@ public class SeedManager {
         /**
          * Stream 3: Routing decisions (per reti di code).
          */
-        ROUTING
+        ROUTING,
+
+        /**
+         * Stream 4: Inter-arrivi classe aperta (iperesponenziale, punto 7).
+         */
+        OPEN_ARRIVALS,
+
+        /**
+         * Stream 5: Scelta componente iperesponenziale classe aperta (punto 7).
+         * Separato da OPEN_ARRIVALS per indipendenza statistica.
+         */
+        OPEN_SERVICE
     }
 
     /**

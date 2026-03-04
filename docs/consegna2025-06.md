@@ -1,120 +1,95 @@
-Esercizio pratico valido per l’esame di Valutazione delle Prestazioni, A.A. 2025-26 
+# Consegna — Valutazione delle Prestazioni A.A. 2025-26
 
-Realizzare un simulatore in Java (o altro linguaggio general purpose a scelta), partendo dal simulatore di coda 
+Realizzare un simulatore in Java (o altro linguaggio general purpose a scelta), partendo dal simulatore di coda singola descritto nel libro di testo (Cap. 4) il cui codice è a disposizione sul DIR.
 
-singola descritto nel libro di testo (Cap. 4) il cui codice è a disposizione sul DIR. 
+---
 
-MODIFICARE IL SIMULATORE, aggiungendo le seguenti caratteristiche: 
+## Punto 1 — Generazione dei Numeri Casuali
 
-1) Generazione dei numeri casuali : integrare nel simulatore un generatore di numeri casuali basato sul metodo 
+Integrare nel simulatore un generatore di numeri casuali basato sul metodo congruente moltiplicativo (per generare U(0,1)) descritto nel libro Leemis-Park. Potete usare le classi `Rng` e `Rvg` reperibili sulla pagina web del prof. Leemis.
 
-congruente moltiplicativo (per generare U(0,1) ) descritto nel libro Leemis-Park (la cui descrizione è 
+Distribuzioni di probabilità da includere:
+- **Esponenziale** — 1 parametro: la media (o il tasso = 1/media). C_v = 1.
+- **Uniforme** — 2 parametri: min, max.
+- **Erlang a k stadi** — 2 parametri: media totale e numero di stadi k. C_v < 1 (tanto minore quanti più stadi, a parità di media).
+- **Iperesponenziale** — 3 parametri: p (probabilità di scegliere la prima esponenziale), media/tasso della prima esponenziale, media/tasso della seconda. C_v > 1.
 
-disponibile sul DIR insieme ad una implementazione delle relative funzioni); potete usare le classi Rng e Rvg 
+---
 
-(la seconda include le funzioni per generare un certo numero di distribuzioni di probabilità) reperibili sulla 
+## Punto 2 — Semi Distanziati e Stream Indipendenti
 
-pagina web del prof. Leemis (vedere slides). Esempi di distribuzioni di probabilità da includere per poter fare 
+Aggiungere i metodi per ottenere una lista di semi iniziali sufficientemente distanziati, da usare per:
+- Replicare la stessa simulazione più volte con semi diversi (le simulazioni possono essere lanciate in parallelo con garanzia di non sovrapposizione delle sequenze generate).
+- Gestire sequenze casuali indipendenti per diverse attività nella stessa esecuzione (es. tempi di inter-arrivo e tempi di servizio su stream separati).
 
-alcuni esperimenti con diverse distribuzioni: l’esponenziale (1 parametro corrispondente alla media o al tasso 
+Potete usare le classi `Rngs` e `Rvgs` reperibili sulla pagina web del prof. Leemis.
 
-che è uguale a (1/media)), l’uniforme nel range (min,max), la erlang a k stadi che ha 2 parametri: la media e 
+---
 
-il numero di stadi (k), la iperesponenziale con tre parametri, p (probabilità di scegliere la prima distribuzione 
+## Punto 3 — Repliche e Report degli Indici
 
-esponenziale), il tasso (o la media) della prima esponenziale, il tasso (o media) della seconda esponenziale. 
+Creare le funzioni necessarie a rilanciare R volte il simulatore con semi diversi (metodo delle prove ripetute), raccogliendo i risultati di ciascun run e producendo un report con gli indici di prestazione calcolati.
 
-La erlang ha un coefficiente di variazione < 1 (tanto minore quanti più stadi ci sono, a parità di media), 
+> È possibile eseguire i run in sequenza oppure in parallelo con semi sufficientemente distanziati. Si può anche lanciare il simulatore R volte tramite script, prevedendo la possibilità di passare il seme iniziale a ogni replica.
 
-l’esponenziale ha un coefficiente di variazione = 1, l’iperesponenziale ha un coefficiente di variazione > 1. 
+Indici da calcolare: throughput, utilizzazione del servitore, tempo medio di permanenza, lunghezza media della coda.
 
-2) Aggiungere i metodi per ottenere una lista di semi iniziali sufficientemente distanziati da usare per replicare 
+---
 
-la stessa simulazione più volte con semi diversi (notare che in questo modo si possono lanciare più 
+## Punto 4 — Stime Intervallari ed Errore Relativo
 
-simulazioni in parallelo con garanzia di non sovrapposizione delle sequenze generate), e da usare per gestire 
+A partire dai risultati degli R run, calcolare la stima puntuale e intervallare dei valori medi dei diversi indici. Valutare l'errore relativo e, se necessario, incrementare il numero di run oppure ripeterli estendendoli.
 
-sequenze casuali indipendenti per diverse attività in ciascuna esecuzione (es. sequenza dei tempi di inter-
+---
 
-arrivo, la sequenza dei tempi di servizio richiesti dai clienti che raggiungono il centro di servizio). Potete 
+## Punto 5 — Validazione vs JMT e Impatto della Variabilità
 
-usare le classi Rngs e Rvgs reperibili sulla pagina web del prof. Leemis (vedere slides). 
+Confrontare i risultati degli esperimenti di simulazione con analoghi esperimenti condotti con JMT (su modelli equivalenti) allo scopo di validare l'implementazione. Effettuare più esperimenti al variare della distribuzione di probabilità dei tempi di inter-arrivo e di servizio (per es. come mostrato nel Cap. 4 di Leemis-Park: *"Impact of Variability of Interarrival and Service Times"*).
 
-3) Creare le funzioni necessarie a rilanciare R volte il simulatore con semi diversi (metodo delle prove ripetute) 
+---
 
-raccogliendo i risultati di ciascun RUN, quindi creare un report che riporti gli indici di prestazione calcolati. 
+## Punto 6 — Sistema Chiuso con Q0, Q1, Q2
 
-Nota: si possono eseguire i run in sequenza, oppure in parallelo utilizzando semi sufficientemente distanziati 
+Realizzare un sistema chiuso in cui circolano N clienti, aggiungendo al primo centro di servizio Q1 un secondo centro (Q2) e una stazione di puro ritardo (i terminali, Q0), collegati secondo la configurazione di Figura 1. Tempi di servizio (diversi in Q1 e Q2) e di ritardo (in Q0) distribuiti esponenzialmente.
 
-ottenuti con il metodo descritto nel libro Leemis-Park. Si può anche lanciare il simulatore R volte tramite 
+Simulare per 3 o 4 valori di N e calcolare:
+- Throughput del sistema (visto da Q0) e dei due centri Q1, Q2
+- Tempi medi di risposta del *sistema centrale* (Q1 + Q2)
+- Utilizzazione di Q1 e Q2
+- Lunghezza media delle code di Q1 e Q2
 
-uno script (prevedere la possibilità di passare il seme o i semi iniziali da usare in ogni replica) e 
+---
 
-successivamente raccogliere i risultati prodotti da ciascuna replica (salvati su file) per eseguire l’analisi 
+## Punto 7 — Classe Aperta Mista
 
-statistica. Calcolare il throughput, l’utilizzazione del servitore, il tempo medio di permanenza dei clienti, la 
+Aggiungere una seconda classe di clienti **aperta**, con tempi di inter-arrivo distribuiti secondo un'iperesponenziale (parametri: probabilità p, due tassi λ₁ e λ₂), che viene servita **esclusivamente da Q1** con un tempo medio di servizio doppio rispetto a quello dei clienti della classe chiusa.
 
-lunghezza media della coda. 
-
-4) A partire dai risultati ottenuti dagli R run calcolare la stima puntuale e intervallare dei valori medi dei diversi 
-
-indici. Valutare l’errore relativo e se necessario incrementare il numero di run oppure ripeterli estendendoli. 
-
-5) Confrontare i risultati ottenuti dagli esperimenti di simulazione con analoghi esperimenti condotti con JMT 
-
-(su modelli equivalenti) allo scopo di validare la vostra implementazione: effettuare più esperimenti al 
-
-variare della distribuzione di probabilità di tempi di interarrivo e di servizio (per es. come mostrato nel 
-
-capitolo 4 di [1] “Impact of Variability of Interarrival and Service Times”). 
-
-6) Modificare il modello : realizzare il modello di un sistema chiuso, in cui circolano N clienti, aggiungendo al 
-
-primo centro di servizio Q1 un secondo centro di servizio (Q2) e una stazione di puro ritardo (i terminali, Q0) 
-
-collegati secondo la configurazione mostrata nella Figura 1: usare tempi di servizio (diversi in Q1 e Q2) e di 
-
-ritardo (in Q0) distribuiti secondo una esponenziale. Simulare il sistema per 3 o 4 diversi valori di N e calcolare 
-
-il throughput del sistema (visto da Q0) e dei due centri di servizio, i tempi medi di risposta del “sistema 
-
-centrale” costituito da Q1 e Q2, l’utilizzazione di Q1 e Q2 e la lunghezza media delle loro code. 
-
-7) Successivamente aggiungere una seconda classe di clienti aperta, con tempi di interarrivo distribuiti secondo 
-
-una iperesponenziale (caratterizzata da una probabilità p, e due tassi di esponenziali lambda1 e lambda2) 
-
-che viene servita esclusivamente dalla coda Q1 con un tempo medio di servizio doppio rispetto a quello dei cliendi della classe chiusa. Fissato N, provare ad eseguire il sistema per valori crescenti del tasso medio di 
-
-interarrivo, misurando i tempi di risposta per le due classi di clienti, il throughput e l’utilizzazione di ciascuna 
-
-stazione (nel caso di Q1 dettagliato per le due classi di clienti). 
-
-8) Validare entrambi i modelli confrontando i risultati ottenuti (per alcune configurazioni) con quelli calcolati 
-
-su modelli analoghi tramite JMT. 
+Fissato N, eseguire il sistema per valori crescenti del tasso medio di inter-arrivo e misurare:
+- Tempi di risposta per le due classi di clienti
+- Throughput di ciascuna stazione
+- Utilizzazione di ciascuna stazione (per Q1: dettagliato per classe)
 
 ![FIGURA 1: schema del sistema. In rosso il flusso di clienti della classe aperta](Figura1.jpg)
 
- 
+Il diagramma rappresenta un modello di rete di code mista multiclasse (mixed queueing network) costituita da tre centri di servizio ($Q_0$, $Q_1$, $Q_2$) in cui transitano due distinte classi di job:
+- **Classe Chiusa** (flusso blu): Caratterizzata da una popolazione costante nel sistema. I job in uscita dal nodo $Q_0$ subiscono un instradamento probabilistico (routing): accedono al nodo $Q_1$ con probabilità $p_1$ e al nodo $Q_2$ con probabilità $1-p_1$. Al termine del servizio presso $Q_1$ o $Q_2$, i job vengono re-instradati deterministicamente (probabilità unitaria) verso $Q_0$, chiudendo il ciclo.
+- **Classe Aperta** (flusso rosso): Caratterizzata da un tasso di arrivi dall'esterno (throughput esterno). I job di questa classe transitano esclusivamente attraverso il nodo $Q_1$ e, completato il servizio, abbandonano definitivamente la rete.
+- **Risorsa Condivisa**: Il centro di servizio $Q_1$ funge da nodo condiviso, elaborando simultaneamente le richieste di entrambe le classi (aperta e chiusa), il che implica una mutua dipendenza prestazionale tra i due flussi in base alla disciplina di servizio (es. FCFS, PS).
 
-7) Preparare una relazione finale sintetica e una presentazione (Power Point o simile, da utilizzare nel 
+---
 
-colloquio orale sul progetto realizzato) dove dovranno essere riportati brevemente la descrizione dei modelli 
+## Punto 8 — Validazione del Modello Misto
 
-(in particolare del modello di Fig.1 nelle due versioni, con solo clienti della classe chiusa e con le due classi di 
+Validare entrambi i modelli (solo classe chiusa; modello misto) confrontando i risultati, per alcune configurazioni, con quelli calcolati su modelli analoghi tramite JMT.
 
-clienti) e degli aspetti specifici dell’algoritmo di simulazione per tali modelli (stato, eventi, procedure di 
+---
 
-gestione degli eventi più complesse, aggiornamento accumulatori), tutti i risultati ottenuti con i modelli 
+## Punto 9 — Relazione Finale e Presentazione
 
-realizzati, sotto forma di tabelle contenenti le stime puntuali e intervallari degli indici di prestazione ed 
+Preparare una relazione finale sintetica e una presentazione (PowerPoint o simile) contenente:
+- Descrizione dei modelli (stato, eventi, procedure di gestione eventi, aggiornamento accumulatori), in particolare del modello di Figura 1 nelle due versioni.
+- Tutti i risultati sotto forma di tabelle con stime puntuali e intervallari.
+- Eventuali grafici dell'andamento di indici significativi al variare dei parametri.
+- Paragrafi di interpretazione: come varia un indice al variare di un parametro e se l'andamento è in linea con le attese.
 
-eventualmente alcuni grafici dell’andamento di uno o più indici ritenuti significativi, al variare di uno o più 
-
-parametri, alcuni paragrafi che diano una interpretazione ai risultati ottenuti, per esempio osservare come 
-
-varia un dato indice al variare di un dato parametro e discutere se l’andamento è in linea con le attese o 
-
-meno). 
-
+Vedere anche [Traccia Relazione](docs/traccia-relazione-simulatore-esteso.md) per ulteriori precisazioni.
