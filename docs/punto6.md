@@ -21,7 +21,7 @@ Simulare il sistema per 4 valori di $N$ e calcolare throughput, utilizzi, tempi 
 | Q1 | Singolo server FCFS | Esponenziale | $S_1 = 1.0$ s |
 | Q2 | Singolo server FCFS | Esponenziale | $S_2 = 0.8$ s |
 
-**Collo di bottiglia**: $Q_2$ in termini assoluti, $D_1 = p_1 \cdot S_1 = 0.3 \times 1.0 = 0.3$s e $D_2 = (1-p_1) \cdot S_2 = 0.7 \times 0.8 = 0.56$s. Il massimo è $D_{\max} = 0.56$ (relativo a $Q_2$).
+**Collo di bottiglia**: $Q_2$ in termini assoluti, $D_1 = p_1 \cdot S_1 = 0.3 \times 1.0 = 0.3$s e $D_2 = (1-p_1) \cdot S_2 = 0.7 \times 0.8 = 0.56s$. Il massimo è $D_{\max} = 0.56$ (relativo a $Q_2$).
 
 **Throughput asintotico** (bound di saturazione dall'analisi operazionale):
 $$X^*(N) = \min\!\left(\frac{1}{D_{\max}},\; \frac{N}{Z + D_1 + D_2}\right) = \min\!\left(\frac{1}{0.56},\; \frac{N}{10.0 + 0.3 + 0.56}\right) = \min\!\left(1.7857,\; \frac{N}{10.86}\right)$$
