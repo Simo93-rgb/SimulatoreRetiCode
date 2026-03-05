@@ -8,15 +8,15 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class MixedNetworkSimulatorTest {
 
-    private static final long   SEED        = 100_000_007L;
-    private static final long   COMPLETIONS = 20_000L;
+    private static final long SEED = 100_000_007L;
+    private static final long COMPLETIONS = 20_000L;
     // Parametri base: N=15, Z=10, S1=1.0, S2=0.8, λ_open=0.3
-    private static final double MEAN_ARR    = 1.0 / 0.3;  // ≈ 3.333 s
-    private static final double MEAN1       = 0.5 * MEAN_ARR;
-    private static final double MEAN2       = 1.5 * MEAN_ARR;
+    private static final double MEAN_ARR = 1.0 / 0.3; // ≈ 3.333 s
+    private static final double MEAN1 = 0.5 * MEAN_ARR;
+    private static final double MEAN2 = 1.5 * MEAN_ARR;
 
     private MixedNetworkConfig cfg() {
-        return new MixedNetworkConfig(15, 10.0, 1.0, 0.8, COMPLETIONS, 0.5, MEAN1, MEAN2);
+        return new MixedNetworkConfig(15, 10.0, 1.0, 0.8, 0.5, COMPLETIONS, 0.5, MEAN1, MEAN2);
     }
 
     @Test
@@ -26,7 +26,7 @@ class MixedNetworkSimulatorTest {
         MixedNetworkStatistics stats = sim.run();
         long total = stats.getCompletionsQ1Closed() + stats.getCompletionsQ1Open();
         assertEquals(COMPLETIONS, total,
-            "La simulazione deve fermarsi a maxCompletions completamenti totali su Q1");
+                "La simulazione deve fermarsi a maxCompletions completamenti totali su Q1");
     }
 
     @Test
@@ -43,7 +43,7 @@ class MixedNetworkSimulatorTest {
         MixedNetworkSimulator sim = new MixedNetworkSimulator(cfg(), SEED);
         MixedNetworkStatistics stats = sim.run();
         assertTrue(stats.getCompletionsQ1Open() > 0,
-            "La classe aperta deve aver completato almeno un servizio");
+                "La classe aperta deve aver completato almeno un servizio");
     }
 
     @Test
@@ -55,8 +55,8 @@ class MixedNetworkSimulatorTest {
         long diff = Math.abs(stats.getCompletionsQ2() - stats.getCompletionsQ1Closed());
         // Tolleranza: al massimo 1% di scarto per effetti di bordo
         assertTrue(diff < COMPLETIONS * 0.01,
-            String.format("Q2 completamenti (%d) deve essere vicino a chiusi Q1 (%d)",
-                stats.getCompletionsQ2(), stats.getCompletionsQ1Closed()));
+                String.format("Q2 completamenti (%d) deve essere vicino a chiusi Q1 (%d)",
+                        stats.getCompletionsQ2(), stats.getCompletionsQ1Closed()));
     }
 
     @Test
@@ -66,12 +66,12 @@ class MixedNetworkSimulatorTest {
         MixedNetworkStatistics stats = sim.run();
         double clock = sim.getClock();
 
-        double rho1     = stats.getUtilizationQ1(clock);
+        double rho1 = stats.getUtilizationQ1(clock);
         double expected = stats.getThroughputQ1Closed(clock) * 1.0
-                        + stats.getThroughputQ1Open(clock)   * 2.0;  // 2·S1
+                + stats.getThroughputQ1Open(clock) * 2.0; // 2·S1
 
         assertEquals(expected, rho1, expected * 0.05,
-            String.format("ρ1=%.4f deve essere ≈ X_closed·S1 + X_open·2S1=%.4f", rho1, expected));
+                String.format("ρ1=%.4f deve essere ≈ X_closed·S1 + X_open·2S1=%.4f", rho1, expected));
     }
 
     @Test
@@ -81,11 +81,11 @@ class MixedNetworkSimulatorTest {
         MixedNetworkStatistics stats = sim.run();
         double clock = sim.getClock();
 
-        double rho2     = stats.getUtilizationQ2(clock);
+        double rho2 = stats.getUtilizationQ2(clock);
         double expected = stats.getSystemThroughput(clock) * 0.8;
 
         assertEquals(expected, rho2, expected * 0.05,
-            String.format("ρ2=%.4f deve essere ≈ X·S2=%.4f", rho2, expected));
+                String.format("ρ2=%.4f deve essere ≈ X·S2=%.4f", rho2, expected));
     }
 
     @Test
@@ -97,44 +97,44 @@ class MixedNetworkSimulatorTest {
         MixedNetworkSimulator sim = new MixedNetworkSimulator(cfg(), SEED);
         MixedNetworkStatistics stats = sim.run();
 
-        double t1o    = stats.getMeanResponseTimeQ1Open();
+        double t1o = stats.getMeanResponseTimeQ1Open();
         double minExp = 2.0 * 1.0; // 2 · S1
 
         assertTrue(t1o >= minExp,
-            String.format("E[T1_open]=%.4f deve essere >= 2·S1=%.4f", t1o, minExp));
+                String.format("E[T1_open]=%.4f deve essere >= 2·S1=%.4f", t1o, minExp));
     }
 
     @Test
     @DisplayName("Al crescere di λ_open, ρ_Q1 totale cresce")
     void testUtilizationIncreasesWithLambda() {
-        MixedNetworkConfig cfgLow  = makeCfg(0.10);
+        MixedNetworkConfig cfgLow = makeCfg(0.10);
         MixedNetworkConfig cfgHigh = makeCfg(0.50);
 
-        MixedNetworkSimulator simLow  = new MixedNetworkSimulator(cfgLow,  SEED);
+        MixedNetworkSimulator simLow = new MixedNetworkSimulator(cfgLow, SEED);
         MixedNetworkSimulator simHigh = new MixedNetworkSimulator(cfgHigh, SEED);
 
-        double rhoLow  = simLow.run().getUtilizationQ1(simLow.getClock());
+        double rhoLow = simLow.run().getUtilizationQ1(simLow.getClock());
         double rhoHigh = simHigh.run().getUtilizationQ1(simHigh.getClock());
 
         assertTrue(rhoHigh > rhoLow,
-            String.format("ρ1(λ=0.5)=%.4f deve essere > ρ1(λ=0.1)=%.4f", rhoHigh, rhoLow));
+                String.format("ρ1(λ=0.5)=%.4f deve essere > ρ1(λ=0.1)=%.4f", rhoHigh, rhoLow));
     }
 
     @Test
     @DisplayName("Al crescere di λ_open, E[T1_closed] cresce (interferenza della classe aperta)")
     void testClosedResponseTimeIncreasesWithLambda() {
-        MixedNetworkConfig cfgLow  = makeCfg(0.10);
+        MixedNetworkConfig cfgLow = makeCfg(0.10);
         MixedNetworkConfig cfgHigh = makeCfg(0.50);
 
-        MixedNetworkSimulator simLow  = new MixedNetworkSimulator(cfgLow,  SEED);
+        MixedNetworkSimulator simLow = new MixedNetworkSimulator(cfgLow, SEED);
         MixedNetworkSimulator simHigh = new MixedNetworkSimulator(cfgHigh, SEED);
 
-        double t1Low  = simLow.run().getMeanResponseTimeQ1Closed();
+        double t1Low = simLow.run().getMeanResponseTimeQ1Closed();
         double t1High = simHigh.run().getMeanResponseTimeQ1Closed();
 
         assertTrue(t1High > t1Low,
-            String.format("E[T1_closed](λ=0.5)=%.4f deve essere > E[T1_closed](λ=0.1)=%.4f",
-                t1High, t1Low));
+                String.format("E[T1_closed](λ=0.5)=%.4f deve essere > E[T1_closed](λ=0.1)=%.4f",
+                        t1High, t1Low));
     }
 
     @Test
@@ -144,7 +144,7 @@ class MixedNetworkSimulatorTest {
         MixedNetworkSimulator s1 = new MixedNetworkSimulator(cfg(), seeds[0]);
         MixedNetworkSimulator s2 = new MixedNetworkSimulator(cfg(), seeds[1]);
         assertNotEquals(s1.run().getMeanResponseTimeQ1Closed(),
-                        s2.run().getMeanResponseTimeQ1Closed());
+                s2.run().getMeanResponseTimeQ1Closed());
     }
 
     @Test
@@ -167,10 +167,7 @@ class MixedNetworkSimulatorTest {
     private MixedNetworkConfig makeCfg(double lambda) {
         double meanArr = 1.0 / lambda;
         return new MixedNetworkConfig(
-            15, 10.0, 1.0, 0.8, COMPLETIONS,
-            0.5, 0.5 * meanArr, 1.5 * meanArr);
+                15, 10.0, 1.0, 0.8, 0.5, COMPLETIONS,
+                0.5, 0.5 * meanArr, 1.5 * meanArr);
     }
 }
-
-
-

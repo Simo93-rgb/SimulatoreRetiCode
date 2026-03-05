@@ -9,14 +9,15 @@ import sim.SimulationRunner.ReplicationResults.ConfidenceInterval;
  * Raccolta dati per il sistema misto classe chiusa + classe aperta (Punto 7).
  *
  * Parametri fissi (stessi del punto 6):
- * - N  = 15  clienti chiusi
- * - Z  = 10.0 s (think time Q0)
- * - S1 = 1.0  s (servizio Q1 classe chiusa)
- * - S2 = 0.8  s (servizio Q2)
+ * - N = 15 clienti chiusi
+ * - Z = 10.0 s (think time Q0)
+ * - S1 = 1.0 s (servizio Q1 classe chiusa)
+ * - S2 = 0.8 s (servizio Q2)
  * - S1_open = 2·S1 = 2.0 s (servizio Q1 classe aperta, da consegna)
  *
  * Inter-arrivi classe aperta: iperesponenziale (p=0.5, mean1, mean2)
- * La media totale E[A] = p·mean1 + (1-p)·mean2 decresce al crescere del tasso λ.
+ * La media totale E[A] = p·mean1 + (1-p)·mean2 decresce al crescere del tasso
+ * λ.
  *
  * Valori crescenti di λ_open = 1/E[A] esplorati:
  * - λ=0.10 → carico leggero
@@ -29,18 +30,20 @@ import sim.SimulationRunner.ReplicationResults.ConfidenceInterval;
  */
 public class Punto7Runner {
 
-    private static final int    NUM_REPLICAS  = 20;
-    private static final long   COMPLETIONS   = 50_000L;
+    private static final int NUM_REPLICAS = 20;
+    private static final long COMPLETIONS = 50_000L;
 
-    private static final int    N             = 15;
-    private static final double THINK_TIME    = 10.0;
-    private static final double SERVICE_Q1    = 1.0;
-    private static final double SERVICE_Q2    = 0.8;
-    private static final double HYPER_P       = 0.5;
+    private static final int N = 15;
+    private static final double THINK_TIME = 10.0;
+    private static final double SERVICE_Q1 = 1.0;
+    private static final double SERVICE_Q2 = 0.8;
+    private static final double HYPER_P = 0.5;
 
     // Tassi λ della classe aperta da esplorare.
-    // Nota: la classe aperta occupa Q1 per 2·S1=2s → satura Q1 quando λ_open·2 → 1, cioè λ ≈ 0.45.
-    // Esploriamo fino a λ=0.40 per mantenere il sistema in regime stabile e confrontabile.
+    // Nota: la classe aperta occupa Q1 per 2·S1=2s → satura Q1 quando λ_open·2 → 1,
+    // cioè λ ≈ 0.45.
+    // Esploriamo fino a λ=0.40 per mantenere il sistema in regime stabile e
+    // confrontabile.
     private static final double[] LAMBDA_OPEN = { 0.10, 0.20, 0.30, 0.40 };
 
     public static void main(String[] args) {
@@ -51,11 +54,11 @@ public class Punto7Runner {
         System.out.println("=".repeat(80));
         System.out.println("PUNTO 7 - SISTEMA MISTO: CLASSE CHIUSA (N=15) + CLASSE APERTA");
         System.out.println("Parametri fissi: Z=" + THINK_TIME + "s, S1=" + SERVICE_Q1
-            + "s, S2=" + SERVICE_Q2 + "s, S1_open=" + (2 * SERVICE_Q1) + "s");
+                + "s, S2=" + SERVICE_Q2 + "s, S1_open=" + (2 * SERVICE_Q1) + "s");
         System.out.println("Inter-arrivi aperti: Hyperexp(p=" + HYPER_P
-            + ", mean1=0.5·E[A], mean2=1.5·E[A])");
+                + ", mean1=0.5·E[A], mean2=1.5·E[A])");
         System.out.println("Configurazione: R=" + NUM_REPLICAS
-            + " repliche, " + COMPLETIONS + " completamenti classe chiusa/replica");
+                + " repliche, " + COMPLETIONS + " completamenti classe chiusa/replica");
         System.out.println("=".repeat(80));
         System.out.println();
 
@@ -76,15 +79,13 @@ public class Punto7Runner {
 
         // Verifica: E[A] = p·mean1 + (1-p)·mean2 = 0.5·0.5·E[A] + 0.5·1.5·E[A] = E[A] ✓
         System.out.printf("--- λ_open=%.2f (E[A]=%.3fs, mean1=%.3fs, mean2=%.3fs) ---%n",
-            lambda, meanInterarrival, mean1, mean2);
+                lambda, meanInterarrival, mean1, mean2);
 
         MixedNetworkConfig config = new MixedNetworkConfig(
-            N, THINK_TIME, SERVICE_Q1, SERVICE_Q2, COMPLETIONS,
-            HYPER_P, mean1, mean2
-        );
+                N, THINK_TIME, SERVICE_Q1, SERVICE_Q2, 0.3, COMPLETIONS,
+                HYPER_P, mean1, mean2);
 
-        MixedNetworkResults results =
-            new MixedNetworkRunner(config, NUM_REPLICAS).runReplications();
+        MixedNetworkResults results = new MixedNetworkRunner(config, NUM_REPLICAS).runReplications();
 
         printResults(results, lambda);
         System.out.println();
@@ -117,10 +118,7 @@ public class Punto7Runner {
 
     private static String fmt(ConfidenceInterval ci) {
         return String.format("%.4f ∈ [%.4f, %.4f] (RE=%.2f%%)",
-            ci.getMean(), ci.getLowerBound(), ci.getUpperBound(),
-            ci.getRelativeError() * 100);
+                ci.getMean(), ci.getLowerBound(), ci.getUpperBound(),
+                ci.getRelativeError() * 100);
     }
 }
-
-
-
