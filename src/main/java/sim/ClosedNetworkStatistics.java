@@ -12,8 +12,8 @@ package sim;
  * - Throughput X_i = completamenti / T
  * - Utilizzo ρ_i = area_busy_i / T
  * - E[Nq_i] = area_queue_i / T
- * - E[N_i]  = area_system_i / T
- * - E[T_i]  = sum_response_i / completamenti (via Little: E[N_i] / X_i)
+ * - E[N_i] = area_system_i / T
+ * - E[T_i] = sum_response_i / completamenti (via Little: E[N_i] / X_i)
  *
  * Per il sistema centrale (Q1+Q2):
  * - E[T_sys] = E[T1] + E[T2] (per Little, sistema in serie)
@@ -57,14 +57,16 @@ public class ClosedNetworkStatistics {
         double dt = currentTime - lastEventTime;
 
         // Q1
-        if (serverBusyQ1) areaServerBusyQ1 += dt;
+        if (serverBusyQ1)
+            areaServerBusyQ1 += dt;
         areaQueueLengthQ1 += queueLengthQ1 * dt;
-        areaSystemSizeQ1  += (queueLengthQ1 + (serverBusyQ1 ? 1 : 0)) * dt;
+        areaSystemSizeQ1 += (queueLengthQ1 + (serverBusyQ1 ? 1 : 0)) * dt;
 
         // Q2
-        if (serverBusyQ2) areaServerBusyQ2 += dt;
+        if (serverBusyQ2)
+            areaServerBusyQ2 += dt;
         areaQueueLengthQ2 += queueLengthQ2 * dt;
-        areaSystemSizeQ2  += (queueLengthQ2 + (serverBusyQ2 ? 1 : 0)) * dt;
+        areaSystemSizeQ2 += (queueLengthQ2 + (serverBusyQ2 ? 1 : 0)) * dt;
 
         lastEventTime = currentTime;
     }
@@ -85,10 +87,21 @@ public class ClosedNetworkStatistics {
 
     // ---- Aggiornamento stato ----
 
-    public void setQueueLengthQ1(int n) { this.queueLengthQ1 = n; }
-    public void setQueueLengthQ2(int n) { this.queueLengthQ2 = n; }
-    public void setServerBusyQ1(boolean b) { this.serverBusyQ1 = b; }
-    public void setServerBusyQ2(boolean b) { this.serverBusyQ2 = b; }
+    public void setQueueLengthQ1(int n) {
+        this.queueLengthQ1 = n;
+    }
+
+    public void setQueueLengthQ2(int n) {
+        this.queueLengthQ2 = n;
+    }
+
+    public void setServerBusyQ1(boolean b) {
+        this.serverBusyQ1 = b;
+    }
+
+    public void setServerBusyQ2(boolean b) {
+        this.serverBusyQ2 = b;
+    }
 
     // ========== Indici Q1 ==========
 
@@ -147,31 +160,38 @@ public class ClosedNetworkStatistics {
     // ========== Indici Sistema Centrale (Q1+Q2) ==========
 
     /**
-     * Throughput del sistema (visto da Q0): X = completamenti Q1 / T.
-     * In steady state X1 = X2 = X_system.
+     * Throughput del sistema (visto da Q0): X = (completamenti Q1 + completamenti
+     * Q2) / T.
      */
     public double getSystemThroughput(double totalTime) {
-        return getThroughputQ1(totalTime);
+        return getThroughputQ1(totalTime) + getThroughputQ2(totalTime);
     }
 
     /**
-     * Tempo medio di risposta del sistema centrale (Q1 + Q2).
-     * E[T_sys] = E[T1] + E[T2]
+     * Tempo medio di risposta del sistema centrale (Q1 || Q2).
+     * Poiché è parallelo, E[T_sys] è la media pesata sui completamenti.
      */
     public double getMeanResponseTimeSystem() {
-        return getMeanResponseTimeQ1() + getMeanResponseTimeQ2();
+        long totalCompletions = completionsQ1 + completionsQ2;
+        if (totalCompletions == 0)
+            return 0.0;
+        return (sumResponseTimeQ1 + sumResponseTimeQ2) / totalCompletions;
     }
 
     // ========== Getters raw ==========
 
-    public long getCompletionsQ1() { return completionsQ1; }
-    public long getCompletionsQ2() { return completionsQ2; }
+    public long getCompletionsQ1() {
+        return completionsQ1;
+    }
+
+    public long getCompletionsQ2() {
+        return completionsQ2;
+    }
 
     @Override
     public String toString() {
         return String.format(
-            "ClosedNetStats[completQ1=%d, E[T1]=%.3f, E[T2]=%.3f]",
-            completionsQ1, getMeanResponseTimeQ1(), getMeanResponseTimeQ2());
+                "ClosedNetStats[completQ1=%d, E[T1]=%.3f, E[T2]=%.3f]",
+                completionsQ1, getMeanResponseTimeQ1(), getMeanResponseTimeQ2());
     }
 }
-

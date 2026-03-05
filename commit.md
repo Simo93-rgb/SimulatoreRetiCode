@@ -37,5 +37,4 @@ MixedNetworkSimulatorTest x12) — totale suite: 115/115
 
 ---
 
-
-
+feat(punto6): sistema chiuso Q0→Q1→Q2 con N clienti circolanti e routing probabilistico
