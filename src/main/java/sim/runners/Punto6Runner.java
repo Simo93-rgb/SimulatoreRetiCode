@@ -33,7 +33,7 @@ public class Punto6Runner {
     private static final double SERVICE_Q2 = 0.8;
 
     // Valori di N da simulare
-    private static final int[] N_VALUES = { 5, 15, 30, 50 };
+    private static final int[] N_VALUES = { 5, 11, 17, 23, 30 };
 
     public static void main(String[] args) {
         run();
@@ -59,9 +59,10 @@ public class Punto6Runner {
         // Etichetta carico
         String loadLabel = switch (N) {
             case 5 -> "LEGGERO";
-            case 15 -> "MEDIO";
-            case 30 -> "INTENSO";
-            case 50 -> "SATURAZIONE";
+            case 11 -> "MEDIO";
+            case 17 -> "INTENSO";
+            case 23 -> "VICINO SATURAZIONE";
+            case 30 -> "SATURAZIONE";
             default -> "";
         };
 

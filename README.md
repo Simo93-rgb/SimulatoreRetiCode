@@ -37,6 +37,7 @@ mvn clean test
 # Esegui raccolta dati per un punto specifico
 mvn compile exec:java "-Dexec.args=punto5"
 mvn compile exec:java "-Dexec.args=punto6"
+mvn compile exec:java "-Dexec.args=punto7"
 ```
 
 **Test totali**: 115 (tutti i punti 1–7)
