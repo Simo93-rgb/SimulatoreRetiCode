@@ -14,18 +14,16 @@ import sim.SimulationRunner.ReplicationResults.ConfidenceInterval;
 public class Punto5Runner {
 
     private static final int NUM_REPLICAS = 20;
-    private static final int CUSTOMERS_PER_REPLICA = 100000;  // 2M customers totali (20×100k)
+    private static final int CUSTOMERS_PER_REPLICA = 100000; // 2M customers totali (20×100k)
 
     public static void main(String[] args) {
         run();
     }
 
     public static void run() {
-        System.out.println("=".repeat(80));
-        System.out.println("PUNTO 5 - RACCOLTA DATI SIMULATORE");
-        System.out.println("Configurazione: R=" + NUM_REPLICAS + " repliche, N=" + CUSTOMERS_PER_REPLICA + " customer/replica");
-        System.out.println("=".repeat(80));
-        System.out.println();
+        System.out.println("# PUNTO 5 - RACCOLTA DATI SIMULATORE\n");
+        System.out.println("**Configurazione:** `R=" + NUM_REPLICAS + "` repliche, `N=" + CUSTOMERS_PER_REPLICA
+                + "` customer/replica\n");
 
         // Esperimento 1: M/M/1 Standard (baseline)
         runExperiment1_MM1_Baseline();
@@ -45,16 +43,15 @@ public class Punto5Runner {
         // Esperimento 6: M/Ek/1 (servizio Erlang)
         runExperiment6_MEk();
 
-        System.out.println("\n" + "=".repeat(80));
-        System.out.println("RACCOLTA DATI COMPLETATA");
-        System.out.println("Copia questi risultati in docs/punto5.md nelle tabelle corrispondenti");
-        System.out.println("=".repeat(80));
+        System.out.println("---\n");
+        System.out.println("## RACCOLTA DATI COMPLETATA\n");
+        System.out.println("I risultati sono pronti per essere inseriti in `results/punto5.md`.\n");
     }
 
     private static void runExperiment1_MM1_Baseline() {
-        System.out.println("--- ESPERIMENTO 1: M/M/1 Standard (ρ=0.8) ---");
-        System.out.println("Parametri: λ=0.8, μ=1.0");
-        System.out.println("Teoria: E[T]=5.0, E[N]=4.0, E[Nq]=3.2, ρ=0.8\n");
+        System.out.println("## ESPERIMENTO 1: M/M/1 Standard ($\\rho=0.8$)\n");
+        System.out.println("- **Parametri:** $\\lambda=0.8$, $\\mu=1.0$");
+        System.out.println("- **Teoria:** $E[T]=5.0$, $E[N]=4.0$, $E[N_q]=3.2$, $\\rho=0.8$\n");
 
         SimulationConfig config = new SimulationConfig(0.8, 1.0, CUSTOMERS_PER_REPLICA);
         ReplicationResults results = new SimulationRunner(config, NUM_REPLICAS).runReplications();
@@ -64,9 +61,9 @@ public class Punto5Runner {
     }
 
     private static void runExperiment2_MM1_LowLoad() {
-        System.out.println("--- ESPERIMENTO 2: M/M/1 Basso Carico (ρ=0.5) ---");
-        System.out.println("Parametri: λ=0.5, μ=1.0");
-        System.out.println("Teoria: E[T]=2.0, E[N]=1.0, ρ=0.5\n");
+        System.out.println("## ESPERIMENTO 2: M/M/1 Basso Carico ($\\rho=0.5$)\n");
+        System.out.println("- **Parametri:** $\\lambda=0.5$, $\\mu=1.0$");
+        System.out.println("- **Teoria:** $E[T]=2.0$, $E[N]=1.0$, $\\rho=0.5$\n");
 
         SimulationConfig config = new SimulationConfig(0.5, 1.0, CUSTOMERS_PER_REPLICA);
         ReplicationResults results = new SimulationRunner(config, NUM_REPLICAS).runReplications();
@@ -76,9 +73,9 @@ public class Punto5Runner {
     }
 
     private static void runExperiment3_MM1_HighLoad() {
-        System.out.println("--- ESPERIMENTO 3: M/M/1 Alto Carico (ρ=0.9) ---");
-        System.out.println("Parametri: λ=0.9, μ=1.0");
-        System.out.println("Teoria: E[T]=10.0, E[N]=9.0, ρ=0.9\n");
+        System.out.println("## ESPERIMENTO 3: M/M/1 Alto Carico ($\\rho=0.9$)\n");
+        System.out.println("- **Parametri:** $\\lambda=0.9$, $\\mu=1.0$");
+        System.out.println("- **Teoria:** $E[T]=10.0$, $E[N]=9.0$, $\\rho=0.9$\n");
 
         SimulationConfig config = new SimulationConfig(0.9, 1.0, CUSTOMERS_PER_REPLICA);
         ReplicationResults results = new SimulationRunner(config, NUM_REPLICAS).runReplications();
@@ -88,14 +85,14 @@ public class Punto5Runner {
     }
 
     private static void runExperiment4_MD1() {
-        System.out.println("--- ESPERIMENTO 4: M/D/1 (Servizio Deterministico) ---");
-        System.out.println("Parametri: λ=0.8, servizio D=1.0 (cv²=0)");
-        System.out.println("Teoria M/D/1: E[T]=3.0, E[Nq]=1.6, E[N]=2.4\n");
+        System.out.println("## ESPERIMENTO 4: M/D/1 (Servizio Deterministico)\n");
+        System.out.println("- **Parametri:** $\\lambda=0.8$, servizio D=1.0 ($cv^2=0$)");
+        System.out.println("- **Teoria M/D/1:** $E[T]=3.0$, $E[N_q]=1.6$, $E[N]=2.4$\n");
 
         SimulationConfig config = new SimulationConfig(
-            0.8, 1.0, CUSTOMERS_PER_REPLICA,
-            SimulationConfig.ServiceDistribution.DETERMINISTIC,
-            0, 0, 0, 0  // parametri inutilizzati per DETERMINISTIC
+                0.8, 1.0, CUSTOMERS_PER_REPLICA,
+                SimulationConfig.ServiceDistribution.DETERMINISTIC,
+                0, 0, 0, 0 // parametri inutilizzati per DETERMINISTIC
         );
         ReplicationResults results = new SimulationRunner(config, NUM_REPLICAS).runReplications();
 
@@ -104,18 +101,18 @@ public class Punto5Runner {
     }
 
     private static void runExperiment5_MH2() {
-        System.out.println("--- ESPERIMENTO 5: M/H₂/1 (Servizio Iperesponenziale) ---");
-        System.out.println("Parametri: λ=0.8, servizio Hyperexp(p=0.5, mean1=0.5, mean2=1.5)");
-        System.out.println("Media servizio: E[S]=1.0, cv²>1");
-        System.out.println("Previsione: E[T] > 5.0 (M/M/1)\n");
+        System.out.println("## ESPERIMENTO 5: M/H$_2$/1 (Servizio Iperesponenziale)\n");
+        System.out.println("- **Parametri:** $\\lambda=0.8$, servizio Hyperexp(p=0.5, mean1=0.5, mean2=1.5)");
+        System.out.println("- **Media servizio:** $E[S]=1.0$, $cv^2>1$");
+        System.out.println("- **Previsione:** $E[T] > 5.0$ (M/M/1)\n");
 
         SimulationConfig config = new SimulationConfig(
-            0.8, 1.0, CUSTOMERS_PER_REPLICA,
-            SimulationConfig.ServiceDistribution.HYPEREXPONENTIAL,
-            0,           // erlangK (inutilizzato)
-            0.5,         // hyperP
-            0.5,         // hyperMean1
-            1.5          // hyperMean2  → E[S] = 0.5*0.5 + 0.5*1.5 = 1.0
+                0.8, 1.0, CUSTOMERS_PER_REPLICA,
+                SimulationConfig.ServiceDistribution.HYPEREXPONENTIAL,
+                0, // erlangK (inutilizzato)
+                0.5, // hyperP
+                0.5, // hyperMean1
+                1.5 // hyperMean2 → E[S] = 0.5*0.5 + 0.5*1.5 = 1.0
         );
         ReplicationResults results = new SimulationRunner(config, NUM_REPLICAS).runReplications();
 
@@ -124,16 +121,16 @@ public class Punto5Runner {
     }
 
     private static void runExperiment6_MEk() {
-        System.out.println("--- ESPERIMENTO 6: M/Ek/1 (Servizio Erlang) ---");
-        System.out.println("Parametri: λ=0.8, servizio Erlang(k=4, mean=1.0)");
-        System.out.println("cv²=1/k=0.25");
-        System.out.println("Previsione: E[T] < 5.0 (M/M/1)\n");
+        System.out.println("## ESPERIMENTO 6: M/E$_k$/1 (Servizio Erlang)\n");
+        System.out.println("- **Parametri:** $\\lambda=0.8$, servizio Erlang(k=4, mean=1.0)");
+        System.out.println("- **cv$^2$:** $1/k=0.25$");
+        System.out.println("- **Previsione:** $E[T] < 5.0$ (M/M/1)\n");
 
         SimulationConfig config = new SimulationConfig(
-            0.8, 1.0, CUSTOMERS_PER_REPLICA,
-            SimulationConfig.ServiceDistribution.ERLANG,
-            4,           // erlangK
-            0, 0, 0      // hyper params (inutilizzati)
+                0.8, 1.0, CUSTOMERS_PER_REPLICA,
+                SimulationConfig.ServiceDistribution.ERLANG,
+                4, // erlangK
+                0, 0, 0 // hyper params (inutilizzati)
         );
         ReplicationResults results = new SimulationRunner(config, NUM_REPLICAS).runReplications();
 
@@ -142,35 +139,24 @@ public class Punto5Runner {
     }
 
     private static void printResults(ReplicationResults results) {
-        ConfidenceInterval ciThroughput   = results.getConfidenceIntervalThroughput();
-        ConfidenceInterval ciUtilization  = results.getConfidenceIntervalUtilization();
+        ConfidenceInterval ciThroughput = results.getConfidenceIntervalThroughput();
+        ConfidenceInterval ciUtilization = results.getConfidenceIntervalUtilization();
         ConfidenceInterval ciResponseTime = results.getConfidenceIntervalResponseTime();
-        ConfidenceInterval ciQueueLength  = results.getConfidenceIntervalQueueLength();
-        ConfidenceInterval ciSystemSize   = results.getConfidenceIntervalSystemSize();
+        ConfidenceInterval ciQueueLength = results.getConfidenceIntervalQueueLength();
+        ConfidenceInterval ciSystemSize = results.getConfidenceIntervalSystemSize();
 
-        System.out.println("RISULTATI SIMULATORE (IC 95%):");
-        System.out.println("  Throughput (X):     " + formatCI(ciThroughput));
-        System.out.println("  Utilizzo (ρ):       " + formatCI(ciUtilization));
-        System.out.println("  E[T] (Response):    " + formatCI(ciResponseTime));
-        System.out.println("  E[Nq] (Queue Len):  " + formatCI(ciQueueLength));
-        System.out.println("  E[N] (System Size): " + formatCI(ciSystemSize));
-
-        System.out.println("\nFORMATO PER TABELLA punto5.md:");
-        System.out.printf("  X:    %.4f ∈ [%.4f, %.4f]\n",
-            ciThroughput.getMean(), ciThroughput.getLowerBound(), ciThroughput.getUpperBound());
-        System.out.printf("  ρ:    %.4f ∈ [%.4f, %.4f]\n",
-            ciUtilization.getMean(), ciUtilization.getLowerBound(), ciUtilization.getUpperBound());
-        System.out.printf("  E[T]: %.4f ∈ [%.4f, %.4f]\n",
-            ciResponseTime.getMean(), ciResponseTime.getLowerBound(), ciResponseTime.getUpperBound());
-        System.out.printf("  E[Nq]: %.4f ∈ [%.4f, %.4f]\n",
-            ciQueueLength.getMean(), ciQueueLength.getLowerBound(), ciQueueLength.getUpperBound());
-        System.out.printf("  E[N]: %.4f ∈ [%.4f, %.4f]\n",
-            ciSystemSize.getMean(), ciSystemSize.getLowerBound(), ciSystemSize.getUpperBound());
+        System.out.println("### Risultati Simulatore (IC 95%)\n");
+        System.out.println("| Metrica | Media | Intervallo di Confidenza | Errore Relativo |");
+        System.out.println("|---|---|---|---|");
+        System.out.println("| **X** (Throughput) | " + formatCIRow(ciThroughput));
+        System.out.println("| **$\\rho$** (Utilizzo) | " + formatCIRow(ciUtilization));
+        System.out.println("| **$E[T]$** (Response Time) | " + formatCIRow(ciResponseTime));
+        System.out.println("| **$E[N_q]$** (Queue Length) | " + formatCIRow(ciQueueLength));
+        System.out.println("| **$E[N]$** (System Size) | " + formatCIRow(ciSystemSize));
     }
 
-    private static String formatCI(ConfidenceInterval ci) {
-        return String.format("%.4f ∈ [%.4f, %.4f] (RE=%.2f%%)",
-            ci.getMean(), ci.getLowerBound(), ci.getUpperBound(), ci.getRelativeError() * 100);
+    private static String formatCIRow(ConfidenceInterval ci) {
+        return String.format("`%.4f` | $\\in [%.4f, %.4f]$ | `%.2f%%` |",
+                ci.getMean(), ci.getLowerBound(), ci.getUpperBound(), ci.getRelativeError() * 100);
     }
 }
-

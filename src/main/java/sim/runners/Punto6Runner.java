@@ -40,23 +40,19 @@ public class Punto6Runner {
     }
 
     public static void run() {
-        System.out.println("=".repeat(80));
-        System.out.println("PUNTO 6 - SISTEMA CHIUSO CON Q0, Q1, Q2");
-        System.out.println("Parametri: Z=" + THINK_TIME + "s, S1=" + SERVICE_Q1
-                + "s, S2=" + SERVICE_Q2 + "s");
-        System.out.println("Configurazione: R=" + NUM_REPLICAS
-                + " repliche, " + COMPLETIONS + " completamenti/replica");
-        System.out.println("=".repeat(80));
-        System.out.println();
+        System.out.println("# PUNTO 6 - SISTEMA CHIUSO CON Q0, Q1, Q2\n");
+        System.out.println("- **Parametri**: `Z=" + THINK_TIME + "s`, `S1=" + SERVICE_Q1
+                + "s`, `S2=" + SERVICE_Q2 + "s`");
+        System.out.println("- **Configurazione**: `R=" + NUM_REPLICAS
+                + "` repliche, `" + COMPLETIONS + "` completamenti/replica\n");
 
         for (int N : N_VALUES) {
             runExperiment(N);
         }
 
-        System.out.println("=".repeat(80));
-        System.out.println("RACCOLTA DATI COMPLETATA");
-        System.out.println("Copia i risultati in docs/punto6.md");
-        System.out.println("=".repeat(80));
+        System.out.println("---\n");
+        System.out.println("## RACCOLTA DATI COMPLETATA\n");
+        System.out.println("I risultati sono pronti per essere inseriti in `results/punto6.md`.\n");
     }
 
     private static void runExperiment(int N) {
@@ -69,12 +65,12 @@ public class Punto6Runner {
             default -> "";
         };
 
-        System.out.println("--- ESPERIMENTO N=" + N + " (carico " + loadLabel + ") ---");
+        System.out.println("## ESPERIMENTO N=" + N + " (carico " + loadLabel + ")\n");
 
         ClosedNetworkConfig config = new ClosedNetworkConfig(
                 N, THINK_TIME, SERVICE_Q1, SERVICE_Q2, 0.3, COMPLETIONS);
 
-        System.out.printf("  Throughput bound superiore X*(N) = %.4f job/s%n",
+        System.out.printf("- **Throughput bound superiore X*(N)**: `%.4f job/s`%n\n",
                 config.getSaturationThroughputBound());
 
         ClosedNetworkResults results = new ClosedNetworkRunner(config, NUM_REPLICAS).runReplications();
@@ -95,33 +91,39 @@ public class Punto6Runner {
         ConfidenceInterval ciNq1 = r.ciQueueLengthQ1();
         ConfidenceInterval ciNq2 = r.ciQueueLengthQ2();
 
-        System.out.println("  THROUGHPUT:");
-        System.out.println("    X (sistema): " + fmt(ciX));
-        System.out.println("    X1 (Q1):     " + fmt(ciX1));
-        System.out.println("    X2 (Q2):     " + fmt(ciX2));
+        System.out.println("### Risultati Simulatore (IC 95%)\n");
+        System.out.println("#### Throughput");
+        System.out.println("- **X** (sistema): " + fmt(ciX));
+        System.out.println("- **X1** (Q1): " + fmt(ciX1));
+        System.out.println("- **X2** (Q2): " + fmt(ciX2));
+        System.out.println();
 
-        System.out.println("  UTILIZZO:");
-        System.out.println("    ρ(Q1):      " + fmt(ciU1));
-        System.out.println("    ρ(Q2):      " + fmt(ciU2));
+        System.out.println("#### Utilizzo");
+        System.out.println("- **$\\rho(Q_1)$**: " + fmt(ciU1));
+        System.out.println("- **$\\rho(Q_2)$**: " + fmt(ciU2));
+        System.out.println();
 
-        System.out.println("  TEMPO RISPOSTA:");
-        System.out.println("    E[T1]:      " + fmt(ciR1));
-        System.out.println("    E[T2]:      " + fmt(ciR2));
-        System.out.println("    E[T_sys]:   " + fmt(ciRs));
+        System.out.println("#### Tempo Risposta");
+        System.out.println("- **$E[T_1]$**: " + fmt(ciR1));
+        System.out.println("- **$E[T_2]$**: " + fmt(ciR2));
+        System.out.println("- **$E[T_{sys}]$**: " + fmt(ciRs));
+        System.out.println();
 
-        System.out.println("  LUNGHEZZA CODE:");
-        System.out.println("    E[Nq1]:     " + fmt(ciNq1));
-        System.out.println("    E[Nq2]:     " + fmt(ciNq2));
+        System.out.println("#### Lunghezza Code");
+        System.out.println("- **$E[N_{q1}]$**: " + fmt(ciNq1));
+        System.out.println("- **$E[N_{q2}]$**: " + fmt(ciNq2));
+        System.out.println();
 
-        System.out.println("\n  FORMATO TABELLA punto6.md:");
-        System.out.printf("    X=%.4f ∈ [%.4f,%.4f] | ρ1=%.4f | ρ2=%.4f | E[T_sys]=%.4f ∈ [%.4f,%.4f]%n",
+        System.out.println("#### Sintesi per Tabella\n");
+        System.out.printf(
+                "- `X = %.4f \\in [%.4f,%.4f]`\n- `\\rho_1 = %.4f`\n- `\\rho_2 = %.4f`\n- `E[T_{sys}] = %.4f \\in [%.4f,%.4f]`%n\n",
                 ciX.getMean(), ciX.getLowerBound(), ciX.getUpperBound(),
                 ciU1.getMean(), ciU2.getMean(),
                 ciRs.getMean(), ciRs.getLowerBound(), ciRs.getUpperBound());
     }
 
     private static String fmt(ConfidenceInterval ci) {
-        return String.format("%.4f ∈ [%.4f, %.4f] (RE=%.2f%%)",
+        return String.format("`%.4f` | $\\in [%.4f, %.4f]$ *(RE: %.2f%%)*",
                 ci.getMean(), ci.getLowerBound(), ci.getUpperBound(),
                 ci.getRelativeError() * 100);
     }

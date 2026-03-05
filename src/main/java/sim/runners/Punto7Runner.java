@@ -19,13 +19,14 @@ import sim.SimulationRunner.ReplicationResults.ConfidenceInterval;
  * La media totale E[A] = p·mean1 + (1-p)·mean2 decresce al crescere del tasso
  * λ.
  *
- * Valori crescenti di λ_open = 1/E[A] esplorati:
- * - λ=0.10 → carico leggero
- * - λ=0.30 → carico medio
- * - λ=0.50 → carico intenso
- * - λ=0.70 → vicino alla saturazione
+ * Valori crescenti di $\\lambda_{open} = 1/E[A]$ esplorati:
+ * - $\\lambda=0.10$ → carico leggero
+ * - $\\lambda=0.30$ → carico medio
+ * - $\\lambda=0.50$ → carico intenso
+ * - $\\lambda=0.70$ → vicino alla saturazione
  *
- * Per ogni λ fissiamo E[A] e poniamo mean1 = 0.5·E[A], mean2 = 1.5·E[A]
+ * Per ogni $\\lambda$ fissiamo $E[A]$ e poniamo mean1 = 0.5·E[A], mean2 =
+ * 1.5·E[A]
  * (stessa proporzione usata nel punto 5 per M/H₂/1, C²_v > 1 garantita).
  */
 public class Punto7Runner {
@@ -39,10 +40,12 @@ public class Punto7Runner {
     private static final double SERVICE_Q2 = 0.8;
     private static final double HYPER_P = 0.5;
 
-    // Tassi λ della classe aperta da esplorare.
-    // Nota: la classe aperta occupa Q1 per 2·S1=2s → satura Q1 quando λ_open·2 → 1,
-    // cioè λ ≈ 0.45.
-    // Esploriamo fino a λ=0.40 per mantenere il sistema in regime stabile e
+    // Tassi $\\lambda$ della classe aperta da esplorare.
+    // Nota: la classe aperta occupa Q1 per 2·S1=2s → satura Q1 quando
+    // $\\lambda_{open} \\cdot 2 \\to 1$,
+    // cioè $\\lambda \\approx 0.45$.
+    // Esploriamo fino a $\\lambda=0.40$ per mantenere il sistema in regime stabile
+    // e
     // confrontabile.
     private static final double[] LAMBDA_OPEN = { 0.10, 0.20, 0.30, 0.40 };
 
@@ -51,25 +54,21 @@ public class Punto7Runner {
     }
 
     public static void run() {
-        System.out.println("=".repeat(80));
-        System.out.println("PUNTO 7 - SISTEMA MISTO: CLASSE CHIUSA (N=15) + CLASSE APERTA");
-        System.out.println("Parametri fissi: Z=" + THINK_TIME + "s, S1=" + SERVICE_Q1
-                + "s, S2=" + SERVICE_Q2 + "s, S1_open=" + (2 * SERVICE_Q1) + "s");
-        System.out.println("Inter-arrivi aperti: Hyperexp(p=" + HYPER_P
-                + ", mean1=0.5·E[A], mean2=1.5·E[A])");
-        System.out.println("Configurazione: R=" + NUM_REPLICAS
-                + " repliche, " + COMPLETIONS + " completamenti classe chiusa/replica");
-        System.out.println("=".repeat(80));
-        System.out.println();
+        System.out.println("# PUNTO 7 - SISTEMA MISTO: CLASSE CHIUSA (N=15) + CLASSE APERTA\n");
+        System.out.println("- **Parametri fissi**: `Z=" + THINK_TIME + "s`, `S1=" + SERVICE_Q1
+                + "s`, `S2=" + SERVICE_Q2 + "s`, `S1_open=" + (2 * SERVICE_Q1) + "s`");
+        System.out.println("- **Inter-arrivi aperti**: `Hyperexp(p=" + HYPER_P
+                + ", mean1=0.5·E[A], mean2=1.5·E[A])`");
+        System.out.println("- **Configurazione**: `R=" + NUM_REPLICAS
+                + "` repliche, `" + COMPLETIONS + "` completamenti classe chiusa/replica\n");
 
         for (double lambda : LAMBDA_OPEN) {
             runExperiment(lambda);
         }
 
-        System.out.println("=".repeat(80));
-        System.out.println("RACCOLTA DATI COMPLETATA");
-        System.out.println("Copia i risultati in docs/punto7.md");
-        System.out.println("=".repeat(80));
+        System.out.println("---\n");
+        System.out.println("## RACCOLTA DATI COMPLETATA\n");
+        System.out.println("I risultati sono pronti per essere inseriti in `results/punto7.md`.\n");
     }
 
     private static void runExperiment(double lambda) {
@@ -78,8 +77,10 @@ public class Punto7Runner {
         double mean2 = 1.5 * meanInterarrival;
 
         // Verifica: E[A] = p·mean1 + (1-p)·mean2 = 0.5·0.5·E[A] + 0.5·1.5·E[A] = E[A] ✓
-        System.out.printf("--- λ_open=%.2f (E[A]=%.3fs, mean1=%.3fs, mean2=%.3fs) ---%n",
-                lambda, meanInterarrival, mean1, mean2);
+        System.out.printf("## ESPERIMENTO $\\lambda_{open}=%.2f$\n\n", lambda);
+        System.out.printf("- **$E[A]$**: `%.3f s`\n", meanInterarrival);
+        System.out.printf("- **mean1**: `%.3f s`\n", mean1);
+        System.out.printf("- **mean2**: `%.3f s`\n\n", mean2);
 
         MixedNetworkConfig config = new MixedNetworkConfig(
                 N, THINK_TIME, SERVICE_Q1, SERVICE_Q2, 0.3, COMPLETIONS,
@@ -92,32 +93,33 @@ public class Punto7Runner {
     }
 
     private static void printResults(MixedNetworkResults r, double lambda) {
-        System.out.println("  THROUGHPUT:");
-        System.out.printf("    X_sistema (chiuso): %s%n", fmt(r.ciThroughputSystem()));
-        System.out.printf("    X_Q1 totale:        %s%n", fmt(r.ciThroughputQ1()));
-        System.out.printf("    X_Q1 chiuso:        %s%n", fmt(r.ciThroughputQ1Closed()));
-        System.out.printf("    X_Q1 aperto:        %s%n", fmt(r.ciThroughputQ1Open()));
-        System.out.printf("    X_Q2:               %s%n", fmt(r.ciThroughputQ2()));
+        System.out.println("### Risultati Simulatore (IC 95%)\n");
+        System.out.println("#### Throughput");
+        System.out.printf("- **X_sistema** (chiuso): %s%n", fmt(r.ciThroughputSystem()));
+        System.out.printf("- **X_Q1 totale**: %s%n", fmt(r.ciThroughputQ1()));
+        System.out.printf("- **X_Q1 chiuso**: %s%n", fmt(r.ciThroughputQ1Closed()));
+        System.out.printf("- **X_Q1 aperto**: %s%n", fmt(r.ciThroughputQ1Open()));
+        System.out.printf("- **X_Q2**: %s%n\n", fmt(r.ciThroughputQ2()));
 
-        System.out.println("  UTILIZZO:");
-        System.out.printf("    ρ_Q1 totale:        %s%n", fmt(r.ciUtilizationQ1()));
-        System.out.printf("    ρ_Q1 (chiuso):      %s%n", fmt(r.ciUtilizationQ1Closed()));
-        System.out.printf("    ρ_Q1 (aperto):      %s%n", fmt(r.ciUtilizationQ1Open()));
-        System.out.printf("    ρ_Q2:               %s%n", fmt(r.ciUtilizationQ2()));
+        System.out.println("#### Utilizzo");
+        System.out.printf("- **$\\rho(Q_1)$ totale**: %s%n", fmt(r.ciUtilizationQ1()));
+        System.out.printf("- **$\\rho(Q_1)$** (chiuso): %s%n", fmt(r.ciUtilizationQ1Closed()));
+        System.out.printf("- **$\\rho(Q_1)$** (aperto): %s%n", fmt(r.ciUtilizationQ1Open()));
+        System.out.printf("- **$\\rho(Q_2)$**: %s%n\n", fmt(r.ciUtilizationQ2()));
 
-        System.out.println("  TEMPO RISPOSTA:");
-        System.out.printf("    E[T1] chiuso:       %s%n", fmt(r.ciResponseTimeQ1Closed()));
-        System.out.printf("    E[T1] aperto:       %s%n", fmt(r.ciResponseTimeQ1Open()));
-        System.out.printf("    E[T2]:              %s%n", fmt(r.ciResponseTimeQ2()));
-        System.out.printf("    E[T_sys] chiuso:    %s%n", fmt(r.ciResponseTimeSystemClosed()));
+        System.out.println("#### Tempo Risposta");
+        System.out.printf("- **$E[T_1]$ chiuso**: %s%n", fmt(r.ciResponseTimeQ1Closed()));
+        System.out.printf("- **$E[T_1]$ aperto**: %s%n", fmt(r.ciResponseTimeQ1Open()));
+        System.out.printf("- **$E[T_2]$**: %s%n", fmt(r.ciResponseTimeQ2()));
+        System.out.printf("- **$E[T_{sys}]$ chiuso**: %s%n\n", fmt(r.ciResponseTimeSystemClosed()));
 
-        System.out.println("  LUNGHEZZA CODE:");
-        System.out.printf("    E[Nq1]:             %s%n", fmt(r.ciQueueLengthQ1()));
-        System.out.printf("    E[Nq2]:             %s%n", fmt(r.ciQueueLengthQ2()));
+        System.out.println("#### Lunghezza Code");
+        System.out.printf("- **$E[N_{q1}]$**: %s%n", fmt(r.ciQueueLengthQ1()));
+        System.out.printf("- **$E[N_{q2}]$**: %s%n\n", fmt(r.ciQueueLengthQ2()));
     }
 
     private static String fmt(ConfidenceInterval ci) {
-        return String.format("%.4f ∈ [%.4f, %.4f] (RE=%.2f%%)",
+        return String.format("`%.4f` | $\\in [%.4f, %.4f]$ *(RE: %.2f%%)*",
                 ci.getMean(), ci.getLowerBound(), ci.getUpperBound(),
                 ci.getRelativeError() * 100);
     }
