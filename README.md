@@ -38,6 +38,11 @@ mvn clean test
 mvn compile exec:java "-Dexec.args=punto5"
 mvn compile exec:java "-Dexec.args=punto6"
 mvn compile exec:java "-Dexec.args=punto7"
+
+# Esegui e salva raccola dati per un punto specifico (Windows)
+java -cp target/classes sim.runners.Punto5Runner | Out-File -Encoding utf8 "results/punto5_results.md"
+java -cp target/classes sim.runners.Punto6Runner | Out-File -Encoding utf8 "results/punto6_results.md"
+java -cp target/classes sim.runners.Punto7Runner | Out-File -Encoding utf8 "results/punto7_results.md"
 ```
 
 **Test totali**: 115 (tutti i punti 1–7)

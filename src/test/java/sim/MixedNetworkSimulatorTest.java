@@ -75,17 +75,17 @@ class MixedNetworkSimulatorTest {
     }
 
     @Test
-    @DisplayName("Legge di utilizzo Q2: ρ2 ≈ X_closed · S2")
+    @DisplayName("Legge di utilizzo Q2: ρ2 ≈ X_Q2 · S2")
     void testUtilizationLawQ2() {
         MixedNetworkSimulator sim = new MixedNetworkSimulator(cfg(), SEED);
         MixedNetworkStatistics stats = sim.run();
         double clock = sim.getClock();
 
         double rho2 = stats.getUtilizationQ2(clock);
-        double expected = stats.getSystemThroughput(clock) * 0.8;
+        double expected = stats.getThroughputQ2(clock) * 0.8; // X_Q2 * S2
 
         assertEquals(expected, rho2, expected * 0.05,
-                String.format("ρ2=%.4f deve essere ≈ X·S2=%.4f", rho2, expected));
+                String.format("ρ2=%.4f deve essere ≈ X_Q2·S2=%.4f", rho2, expected));
     }
 
     @Test

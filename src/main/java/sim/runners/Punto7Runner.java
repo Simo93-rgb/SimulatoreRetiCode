@@ -57,8 +57,8 @@ public class Punto7Runner {
         System.out.println("# PUNTO 7 - SISTEMA MISTO: CLASSE CHIUSA (N=15) + CLASSE APERTA\n");
         System.out.println("- **Parametri fissi**: `Z=" + THINK_TIME + "s`, `S1=" + SERVICE_Q1
                 + "s`, `S2=" + SERVICE_Q2 + "s`, `S1_open=" + (2 * SERVICE_Q1) + "s`");
-        System.out.println("- **Inter-arrivi aperti**: `Hyperexp(p=" + HYPER_P
-                + ", mean1=0.5·E[A], mean2=1.5·E[A])`");
+        System.out.println("- **Inter-arrivi aperti**: Hyperexp(p=" + HYPER_P
+                + ", mean1=0.5 $\\cdot$ E[A], mean2=1.5 $\\cdot$ E[A])");
         System.out.println("- **Configurazione**: `R=" + NUM_REPLICAS
                 + "` repliche, `" + COMPLETIONS + "` completamenti classe chiusa/replica\n");
 

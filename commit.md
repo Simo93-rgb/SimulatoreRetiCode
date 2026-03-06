@@ -1,40 +1,33 @@
-feat(punto7): sistema misto classe chiusa + classe aperta con inter-arrivi iperesponenziali
+fix(punto7): correct parallel routing topology and system throughput bug
 
-Implementazione completa del punto 7 della consegna:
-simulatore event-driven di rete mista a due classi (chiusa N=15
-e aperta con inter-arrivi iperesponenziali) che condividono Q1.
+Propagazione dal punto 6 della topologia corretta (routing parallelo
+probabilistico Q0 → Q1 con prob p1, Q0 → Q2 con prob 1-p1) al
+simulatore del sistema misto.
 
-Nuove classi:
-- MixedNetworkConfig: configurazione immutabile per il sistema misto
-  (parametri classe chiusa + aperta: p, mean1, mean2, S1_open)
-- MixedNetworkStatistics: accumulatori separati per classe in Q1
-  (areaBusyQ1Closed / areaBusyQ1Open, E[T] per classe, throughput
-  per classe, lunghezza code)
-- MixedNetworkSimulator: simulatore event-driven con routing
-  differenziato per classe a Q1 (OPEN → esce, CLOSED → Q2);
-  generazione inter-arrivi iperesponenziali via Leemis-Park
-- MixedNetworkRunner: R repliche con semi distanziati + IC 95%
-  per tutti gli indici (throughput, utilizzo, tempi di risposta,
-  lunghezze code) distinti per classe
-- sim/runners/Punto7Runner: esperimenti al variare di
-  λ_open ∈ {0.10, 0.20, 0.30, 0.40} con stampa tabelle
+Bug risolti:
+- MixedNetworkConfig: aggiunto parametro `routingProbabilityQ1` al
+  costruttore (con getter e validazione)
+- MixedNetworkSimulator.processEndThinkTime: routing probabilistico
+  p1 → Q1, (1-p1) → Q2 (prima andava sempre a Q1 in modo seriale)
+- MixedNetworkSimulator.processDepartureQ1: classe chiusa ora torna
+  a Q0 con think time (non proseguiva più verso Q2 in modo sequenziale)
+- MixedNetworkStatistics.getSystemThroughput: calcolato come
+  (completionsQ1Closed + completionsQ2) / T — corrisponde ora ai
+  valori di JMT (es. λ=0.10: X_sistema = 1.23 invece di 0.37)
+- MixedNetworkStatistics.getMeanResponseTimeSystemClosed: media
+  pesata (sumRespQ1 + sumRespQ2) / totale, non più somma seriale
 
-Modifiche a classi esistenti:
-- Customer: aggiunto enum CustomerClass { CLOSED, OPEN }
-  (default CLOSED, retrocompatibile con tutti i punti precedenti)
-  e metodo isOpen(); aggiunti arrivalTimeAtQ1 / arrivalTimeAtQ2
-- SeedManager.StreamType: aggiunti OPEN_ARRIVALS (stream 4)
-  e OPEN_SERVICE (stream 5)
-- Main: dispatcher CLI abilitato per punto7
+Test:
+- MixedNetworkConfigTest: aggiornate chiamate al costruttore con p1
+- MixedNetworkSimulatorTest: aggiornate chiamate al costruttore con p1;
+  testUtilizationLawQ2 usa getThroughputQ2 (non più getSystemThroughput)
+- Punto7Runner: aggiornata chiamata al costruttore con p1 = 0.3
+- Suite 115/115 verde
 
 Documentazione:
-- docs/punto7.md: relazione con architettura, scelte implementative,
-  risultati simulati (throughput, utilizzo, tempi di risposta,
-  lunghezze code), verifica legge di utilizzo, confronto con punto 6
-
-Test: 17 nuovi test JUnit 5 (MixedNetworkConfigTest x5,
-MixedNetworkSimulatorTest x12) — totale suite: 115/115
+- docs/punto7.md: tabelle risultati aggiornate con i dati corretti
+  (throughput, utilizzo, tempi di risposta, code) per tutti e 4 i
+  valori di λ_open; aggiornata la verifica delle leggi di utilizzo
+  e il confronto con il punto 6
 
 ---
-
-feat(punto6): sistema chiuso Q0→Q1→Q2 con N clienti circolanti e routing probabilistico
