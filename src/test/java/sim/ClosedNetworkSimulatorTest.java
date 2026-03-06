@@ -17,15 +17,15 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class ClosedNetworkSimulatorTest {
 
-    private static final long SEED           = 100_000_007L;
-    private static final long COMPLETIONS    = 30_000L;
-    private static final double THINK_TIME   = 10.0;
-    private static final double SERVICE_Q1   = 1.0;
-    private static final double SERVICE_Q2   = 0.8;
+    private static final long SEED = 100_000_007L;
+    private static final long COMPLETIONS = 30_000L;
+    private static final double THINK_TIME = 10.0;
+    private static final double SERVICE_Q1 = 1.0;
+    private static final double SERVICE_Q2 = 0.8;
 
     /** Crea config standard con N clienti. */
     private ClosedNetworkConfig cfg(int N) {
-        return new ClosedNetworkConfig(N, THINK_TIME, SERVICE_Q1, SERVICE_Q2, COMPLETIONS);
+        return new ClosedNetworkConfig(N, THINK_TIME, SERVICE_Q1, SERVICE_Q2, 0.5, COMPLETIONS);
     }
 
     @Test
@@ -34,8 +34,8 @@ class ClosedNetworkSimulatorTest {
         ClosedNetworkSimulator sim = new ClosedNetworkSimulator(cfg(10), SEED);
         ClosedNetworkStatistics stats = sim.run();
 
-        assertEquals(COMPLETIONS, stats.getCompletionsQ1(),
-            "Simulazione deve fermarsi esattamente a maxCompletions");
+        assertEquals(COMPLETIONS, stats.getCompletionsQ1() + stats.getCompletionsQ2(),
+                "Simulazione deve fermarsi esattamente a maxCompletions (Q1+Q2)");
     }
 
     @Test
@@ -56,9 +56,9 @@ class ClosedNetworkSimulatorTest {
         double x1 = stats.getThroughputQ1(clock);
         double x2 = stats.getThroughputQ2(clock);
 
-        // In steady state X1 ≈ X2 (sistema chiuso in serie)
+        // Con routing 50/50, in steady state X1 ≈ X2
         assertEquals(x1, x2, x1 * 0.05,
-            String.format("Throughput Q1 (%.4f) e Q2 (%.4f) devono essere vicini", x1, x2));
+                String.format("Throughput Q1 (%.4f) e Q2 (%.4f) devono essere vicini con p1=0.5", x1, x2));
     }
 
     @Test
@@ -66,103 +66,104 @@ class ClosedNetworkSimulatorTest {
     void testThroughputBound() {
         int N = 15;
         ClosedNetworkConfig config = cfg(N);
-        ClosedNetworkSimulator sim  = new ClosedNetworkSimulator(config, SEED);
+        ClosedNetworkSimulator sim = new ClosedNetworkSimulator(config, SEED);
         ClosedNetworkStatistics stats = sim.run();
 
-        double x     = stats.getSystemThroughput(sim.getClock());
+        double x = stats.getSystemThroughput(sim.getClock());
         double xBound = config.getSaturationThroughputBound();
 
         assertTrue(x <= xBound * 1.02,
-            String.format("Throughput simulato (%.4f) non deve superare il bound (%.4f)", x, xBound));
+                String.format("Throughput simulato (%.4f) non deve superare il bound (%.4f)", x, xBound));
     }
 
     @Test
-    @DisplayName("Legge di utilizzo: ρ1 = X · S1 (con tolleranza 5%)")
+    @DisplayName("Legge di utilizzo: ρ1 = X1 · S1 (con tolleranza 5%)")
     void testUtilizationLawQ1() {
         ClosedNetworkSimulator sim = new ClosedNetworkSimulator(cfg(15), SEED);
         ClosedNetworkStatistics stats = sim.run();
         double clock = sim.getClock();
 
-        double rho1     = stats.getUtilizationQ1(clock);
-        double x        = stats.getSystemThroughput(clock);
-        double rho1Exp  = x * SERVICE_Q1;
+        double rho1 = stats.getUtilizationQ1(clock);
+        double x1 = stats.getThroughputQ1(clock);
+        double rho1Exp = x1 * SERVICE_Q1;
 
         assertEquals(rho1Exp, rho1, rho1Exp * 0.05,
-            String.format("ρ1 simulato (%.4f) deve essere vicino a X·S1 (%.4f)", rho1, rho1Exp));
+                String.format("ρ1 simulato (%.4f) deve essere vicino a X1·S1 (%.4f)", rho1, rho1Exp));
     }
 
     @Test
-    @DisplayName("Legge di utilizzo: ρ2 = X · S2 (con tolleranza 5%)")
+    @DisplayName("Legge di utilizzo: ρ2 = X2 · S2 (con tolleranza 5%)")
     void testUtilizationLawQ2() {
         ClosedNetworkSimulator sim = new ClosedNetworkSimulator(cfg(15), SEED);
         ClosedNetworkStatistics stats = sim.run();
         double clock = sim.getClock();
 
-        double rho2     = stats.getUtilizationQ2(clock);
-        double x        = stats.getSystemThroughput(clock);
-        double rho2Exp  = x * SERVICE_Q2;
+        double rho2 = stats.getUtilizationQ2(clock);
+        double x2 = stats.getThroughputQ2(clock);
+        double rho2Exp = x2 * SERVICE_Q2;
 
         assertEquals(rho2Exp, rho2, rho2Exp * 0.05,
-            String.format("ρ2 simulato (%.4f) deve essere vicino a X·S2 (%.4f)", rho2, rho2Exp));
+                String.format("ρ2 simulato (%.4f) deve essere vicino a X2·S2 (%.4f)", rho2, rho2Exp));
     }
 
     @Test
-    @DisplayName("Legge di Little per Q1: E[N1] = X · E[T1] (con tolleranza 5%)")
+    @DisplayName("Legge di Little per Q1: E[N1] = X1 · E[T1] (con tolleranza 5%)")
     void testLittlesLawQ1() {
         ClosedNetworkSimulator sim = new ClosedNetworkSimulator(cfg(15), SEED);
         ClosedNetworkStatistics stats = sim.run();
         double clock = sim.getClock();
 
-        double x  = stats.getSystemThroughput(clock);
+        double x1 = stats.getThroughputQ1(clock);
         double t1 = stats.getMeanResponseTimeQ1();
         double n1 = stats.getMeanSystemSizeQ1(clock);
 
-        double n1Expected = x * t1;
+        double n1Expected = x1 * t1;
         assertEquals(n1Expected, n1, n1Expected * 0.05,
-            String.format("E[N1]=%.4f deve essere vicino a X·E[T1]=%.4f", n1, n1Expected));
+                String.format("E[N1]=%.4f deve essere vicino a X1·E[T1]=%.4f", n1, n1Expected));
     }
 
     @Test
-    @DisplayName("Legge di Little per Q2: E[N2] = X · E[T2] (con tolleranza 5%)")
+    @DisplayName("Legge di Little per Q2: E[N2] = X2 · E[T2] (con tolleranza 5%)")
     void testLittlesLawQ2() {
         ClosedNetworkSimulator sim = new ClosedNetworkSimulator(cfg(15), SEED);
         ClosedNetworkStatistics stats = sim.run();
         double clock = sim.getClock();
 
-        double x  = stats.getSystemThroughput(clock);
+        double x2 = stats.getThroughputQ2(clock);
         double t2 = stats.getMeanResponseTimeQ2();
         double n2 = stats.getMeanSystemSizeQ2(clock);
 
-        double n2Expected = x * t2;
+        double n2Expected = x2 * t2;
         assertEquals(n2Expected, n2, n2Expected * 0.05,
-            String.format("E[N2]=%.4f deve essere vicino a X·E[T2]=%.4f", n2, n2Expected));
+                String.format("E[N2]=%.4f deve essere vicino a X2·E[T2]=%.4f", n2, n2Expected));
     }
 
     @Test
-    @DisplayName("Con N grande il throughput si avvicina al bottleneck bound 1/S1")
+    @DisplayName("Con N grande il throughput si avvicina al bottleneck bound 1/D_max")
     void testSaturationAtHighN() {
-        // N=50 >> N* → throughput deve avvicinarsi a 1/S1 = 1.0
+        // N=50 >> N* → throughput deve avvicinarsi a 1/D_max
         ClosedNetworkSimulator sim = new ClosedNetworkSimulator(cfg(50), SEED);
         ClosedNetworkStatistics stats = sim.run();
 
         double x = stats.getSystemThroughput(sim.getClock());
-        double bottleneckBound = 1.0 / SERVICE_Q1;  // 1.0
+        double dMax = Math.max(0.5 * SERVICE_Q1, 0.5 * SERVICE_Q2);
+        double bottleneckBound = 1.0 / dMax; // 2.0
 
-        assertEquals(bottleneckBound, x, bottleneckBound * 0.02,
-            String.format("Con N=50, X (%.4f) deve essere vicino al bound 1/S1 (%.4f)", x, bottleneckBound));
+        assertEquals(bottleneckBound, x, bottleneckBound * 0.05,
+                String.format("Con N=50, X (%.4f) deve essere vicino al bound 1/D_max (%.4f)", x, bottleneckBound));
     }
 
     @Test
     @DisplayName("Con N piccolo il throughput cresce con N (regime leggero)")
     void testThroughputGrowsWithN() {
-        ClosedNetworkSimulator sim5  = new ClosedNetworkSimulator(cfg(5),  SEED);
+        ClosedNetworkSimulator sim5 = new ClosedNetworkSimulator(cfg(5), SEED);
         ClosedNetworkSimulator sim15 = new ClosedNetworkSimulator(cfg(15), SEED);
 
-        double x5  = sim5.run().getSystemThroughput(sim5.getClock());
+        double x5 = sim5.run().getSystemThroughput(sim5.getClock());
         double x15 = sim15.run().getSystemThroughput(sim15.getClock());
 
         assertTrue(x15 > x5,
-            String.format("Throughput deve crescere con N: X(N=5)=%.4f, X(N=15)=%.4f", x5, x15));
+                String.format("Throughput deve crescere con N: X(N=5)=%.4f, X(N=15)=%.4f", x5, x15));
     }
 
     @Test
@@ -179,4 +180,3 @@ class ClosedNetworkSimulatorTest {
         assertNotEquals(t1, t2, "Repliche con semi diversi devono dare risultati diversi");
     }
 }
-

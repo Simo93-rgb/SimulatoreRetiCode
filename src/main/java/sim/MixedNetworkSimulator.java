@@ -10,6 +10,7 @@ import sim.SeedManager.StreamType;
  * Simulatore event-driven per sistema misto: classe chiusa + classe aperta.
  *
  * <h2>Topologia</h2>
+ * 
  * <pre>
  *        [Classe aperta: arrivi iperesponenziali]
  *                         │
@@ -23,23 +24,24 @@ import sim.SeedManager.StreamType;
  *
  * <h2>Logica di routing a Q1</h2>
  * <ul>
- *   <li>Classe chiusa → dopo Q1 va a Q2, poi torna a Q0</li>
- *   <li>Classe aperta → dopo Q1 esce dal sistema (non va a Q2)</li>
+ * <li>Classe chiusa → dopo Q1 va a Q2, poi torna a Q0</li>
+ * <li>Classe aperta → dopo Q1 esce dal sistema (non va a Q2)</li>
  * </ul>
  *
  * <h2>Tempi di servizio Q1</h2>
  * <ul>
- *   <li>Classe chiusa: esponenziale con media {@code S1}</li>
- *   <li>Classe aperta: esponenziale con media {@code 2·S1} (da consegna)</li>
+ * <li>Classe chiusa: esponenziale con media {@code S1}</li>
+ * <li>Classe aperta: esponenziale con media {@code 2·S1} (da consegna)</li>
  * </ul>
  *
  * <h2>Stream RNG (Leemis-Park, nessun java.util.Random)</h2>
  * <ul>
- *   <li>THINK_TIME  (2): think time Q0 classe chiusa</li>
- *   <li>SERVICE     (1): servizio Q1 classe chiusa</li>
- *   <li>ROUTING     (3): servizio Q2</li>
- *   <li>OPEN_ARRIVALS (4): inter-arrivi classe aperta (componente iperesponenziale)</li>
- *   <li>OPEN_SERVICE  (5): servizio Q1 classe aperta</li>
+ * <li>THINK_TIME (2): think time Q0 classe chiusa</li>
+ * <li>SERVICE (1): servizio Q1 classe chiusa</li>
+ * <li>ROUTING (3): servizio Q2</li>
+ * <li>OPEN_ARRIVALS (4): inter-arrivi classe aperta (componente
+ * iperesponenziale)</li>
+ * <li>OPEN_SERVICE (5): servizio Q1 classe aperta</li>
  * </ul>
  *
  * <h2>Condizione di stop</h2>
@@ -52,18 +54,18 @@ public class MixedNetworkSimulator {
     private final Rngs rngs;
     private final Rvgs rvgs;
 
-    private final EventList     fel;
+    private final EventList fel;
     private final CustomerQueue queueQ1;
     private final CustomerQueue queueQ2;
 
-    private Customer serverQ1;  // null = idle
-    private Customer serverQ2;  // null = idle
+    private Customer serverQ1; // null = idle
+    private Customer serverQ2; // null = idle
 
     private int inThinkQ0;
 
     private final MixedNetworkStatistics stats;
     private double clock;
-    private long   nextId;
+    private long nextId;
 
     public MixedNetworkSimulator(MixedNetworkConfig config, long seed) {
         this.config = config;
@@ -72,32 +74,36 @@ public class MixedNetworkSimulator {
         this.rngs.plantSeeds(seed);
         this.rvgs = new Rvgs(rngs);
 
-        this.fel     = new EventList();
+        this.fel = new EventList();
         this.queueQ1 = new CustomerQueue();
         this.queueQ2 = new CustomerQueue();
-        this.stats   = new MixedNetworkStatistics();
+        this.stats = new MixedNetworkStatistics();
 
-        this.clock      = 0.0;
-        this.nextId     = 1;
-        this.serverQ1   = null;
-        this.serverQ2   = null;
-        this.inThinkQ0  = 0;
+        this.clock = 0.0;
+        this.nextId = 1;
+        this.serverQ1 = null;
+        this.serverQ2 = null;
+        this.inThinkQ0 = 0;
     }
 
     /**
-     * Esegue la simulazione fino a {@code maxCompletions} completamenti totali su Q1
+     * Esegue la simulazione fino a {@code maxCompletions} completamenti totali su
+     * Q1
      * (classe chiusa + classe aperta).
      *
-     * <p>Si usa il totale Q1 e non solo i completamenti chiusi per evitare deadlock:
-     * ad alto carico aperto i clienti chiusi si accodano dietro la valanga di aperti
+     * <p>
+     * Si usa il totale Q1 e non solo i completamenti chiusi per evitare deadlock:
+     * ad alto carico aperto i clienti chiusi si accodano dietro la valanga di
+     * aperti
      * e i loro completamenti diventano così rari da non raggiungere mai la soglia.
-     * Il totale Q1 avanza sempre a ritmo ~1/S1_eff indipendentemente dal mix di classi.</p>
+     * Il totale Q1 avanza sempre a ritmo ~1/S1_eff indipendentemente dal mix di
+     * classi.
+     * </p>
      */
     public MixedNetworkStatistics run() {
         initialize();
 
-        while (stats.getCompletionsQ1Closed() + stats.getCompletionsQ1Open()
-                < config.getMaxCompletions()) {
+        while (stats.getCompletionsQ1Closed() + stats.getCompletionsQ1Open() < config.getMaxCompletions()) {
             Event event = fel.getMin();
             fel.dequeue();
 
@@ -106,9 +112,9 @@ public class MixedNetworkSimulator {
 
             switch (event.getType()) {
                 case END_THINK_TIME -> processEndThinkTime(event);
-                case ARRIVAL        -> processArrivalOpen(event);
-                case DEPARTURE      -> processDepartureQ1(event);
-                case TIMEOUT        -> processDepartureQ2(event);
+                case ARRIVAL -> processArrivalOpen(event);
+                case DEPARTURE -> processDepartureQ1(event);
+                case TIMEOUT -> processDepartureQ2(event);
                 default -> throw new IllegalStateException("Evento sconosciuto: " + event.getType());
             }
         }
@@ -140,13 +146,23 @@ public class MixedNetworkSimulator {
     // =========================================================================
 
     /**
-     * Fine think time: cliente chiuso lascia Q0 e si presenta a Q1.
+     * Fine think time: cliente chiuso lascia Q0. Routing probabilistico: p1 -> Q1,
+     * (1-p1) -> Q2.
      */
     private void processEndThinkTime(Event event) {
         Customer c = event.getCustomer();
         inThinkQ0--;
-        c.setArrivalTimeAtQ1(clock);
-        enqueueOrServeQ1(c);
+
+        rngs.selectStream(StreamType.ROUTING.ordinal());
+        double u = rngs.random();
+
+        if (u < config.getRoutingProbabilityQ1()) {
+            c.setArrivalTimeAtQ1(clock);
+            enqueueOrServeQ1(c);
+        } else {
+            c.setArrivalTimeAtQ2(clock);
+            enqueueOrServeQ2(c);
+        }
     }
 
     /**
@@ -186,9 +202,9 @@ public class MixedNetworkSimulator {
         if (departing.isOpen()) {
             // Classe aperta: esce dal sistema, nessuna azione aggiuntiva
         } else {
-            // Classe chiusa: prosegue verso Q2
-            departing.setArrivalTimeAtQ2(clock);
-            enqueueOrServeQ2(departing);
+            // Classe chiusa: torna a Q0
+            scheduleEndThinkTime(departing, clock);
+            inThinkQ0++;
         }
     }
 
@@ -275,18 +291,18 @@ public class MixedNetworkSimulator {
      * Schedula il prossimo arrivo della classe aperta.
      *
      * Inter-arrivo iperesponenziale (composizione):
-     * - con prob p  → esponenziale(mean1)   [stream OPEN_ARRIVALS]
-     * - con prob 1-p → esponenziale(mean2)  [stream OPEN_ARRIVALS]
+     * - con prob p → esponenziale(mean1) [stream OPEN_ARRIVALS]
+     * - con prob 1-p → esponenziale(mean2) [stream OPEN_ARRIVALS]
      *
      * La scelta della componente usa rngs.random() sullo stesso stream,
      * mantenendo tutto su Leemis-Park.
      */
     private void scheduleNextOpenArrival(double from) {
         rngs.selectStream(StreamType.OPEN_ARRIVALS.ordinal());
-        double u = rngs.random();   // U(0,1) Leemis-Park, NON java.util.Random
+        double u = rngs.random(); // U(0,1) Leemis-Park, NON java.util.Random
         double interarrival = (u < config.getOpenHyperP())
-            ? rvgs.exponential(config.getOpenMeanArr1())
-            : rvgs.exponential(config.getOpenMeanArr2());
+                ? rvgs.exponential(config.getOpenMeanArr1())
+                : rvgs.exponential(config.getOpenMeanArr2());
 
         Customer c = new Customer(nextId++, from + interarrival, CustomerClass.OPEN);
         fel.enqueue(new Event(EventType.ARRIVAL, from + interarrival, c));
@@ -296,9 +312,15 @@ public class MixedNetworkSimulator {
     // Getters
     // =========================================================================
 
-    public double getClock()              { return clock; }
-    public MixedNetworkConfig getConfig() { return config; }
-    public int getInThinkQ0()             { return inThinkQ0; }
+    public double getClock() {
+        return clock;
+    }
+
+    public MixedNetworkConfig getConfig() {
+        return config;
+    }
+
+    public int getInThinkQ0() {
+        return inThinkQ0;
+    }
 }
-
-

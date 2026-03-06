@@ -8,38 +8,44 @@ import sim.SeedManager.StreamType;
 /**
  * Simulatore event-driven per sistema chiuso a tre centri.
  *
- * <h2>Topologia</h2>
+ * <h2>Topologia (Figura 1 consegna)</h2>
+ * 
  * <pre>
- *   ┌─────────────────────────────────────────────┐
- *   │                                             │
- *   ▼                                             │
- *  Q0 (Delay) ──► Q1 (Server FCFS) ──► Q2 (Server FCFS)
+ *              p1
+ *   Q0  ─────────────►  Q1  ───┐
+ *       └── (1-p1) ──►  Q2  ───┴──► Q0
  * </pre>
  *
  * <h2>Centri</h2>
  * <ul>
- *   <li>Q0: Delay station (terminali). Server infiniti, think time esponenziale con media Z.</li>
- *   <li>Q1: Singolo server FCFS, servizio esponenziale con media S1.</li>
- *   <li>Q2: Singolo server FCFS, servizio esponenziale con media S2.</li>
+ * <li>Q0: Delay station (terminali). Server infiniti, think time esponenziale
+ * con media Z.</li>
+ * <li>Q1: Singolo server FCFS, servizio esponenziale con media S1.</li>
+ * <li>Q2: Singolo server FCFS, servizio esponenziale con media S2.</li>
  * </ul>
+ *
+ * <h2>Routing</h2>
+ * All'uscita da Q0, ogni cliente viene instradato a Q1 con probabilità p1
+ * e a Q2 con probabilità (1-p1). Al termine del servizio in Q1 o Q2 torna a Q0.
  *
  * <h2>Stream RNG</h2>
  * <ul>
- *   <li>Stream THINK_TIME (2): think time in Q0</li>
- *   <li>Stream SERVICE (1): servizio in Q1</li>
- *   <li>Stream ROUTING (3): servizio in Q2</li>
+ * <li>Stream THINK_TIME (2): think time in Q0</li>
+ * <li>Stream SERVICE (1): servizio in Q1</li>
+ * <li>Stream ROUTING (3): servizio in Q2 + decisione routing Q0</li>
  * </ul>
  *
  * <h2>Condizione di stop</h2>
- * La simulazione termina quando {@code completionsQ1 >= maxCompletions}.
- * Si usa Q1 perché è il collo di bottiglia naturale del sistema centrale.
+ * La simulazione termina quando
+ * {@code completionsQ1 + completionsQ2 >= maxCompletions}.
  *
  * <h2>Stato del sistema</h2>
  * <ul>
- *   <li>{@code inThinkQ0}: numero clienti in think time (Q0)</li>
- *   <li>{@code serverBusyQ1}, {@code queueQ1}: stato Q1</li>
- *   <li>{@code serverBusyQ2}, {@code queueQ2}: stato Q2</li>
- *   <li>Invariante: inThinkQ0 + |queueQ1| + (busyQ1?1:0) + |queueQ2| + (busyQ2?1:0) = N</li>
+ * <li>{@code inThinkQ0}: numero clienti in think time (Q0)</li>
+ * <li>{@code serverBusyQ1}, {@code queueQ1}: stato Q1</li>
+ * <li>{@code serverBusyQ2}, {@code queueQ2}: stato Q2</li>
+ * <li>Invariante: inThinkQ0 + |queueQ1| + (busyQ1?1:0) + |queueQ2| +
+ * (busyQ2?1:0) = N</li>
  * </ul>
  */
 public class ClosedNetworkSimulator {
@@ -56,10 +62,11 @@ public class ClosedNetworkSimulator {
     private final CustomerQueue queueQ2;
 
     // Stato server
-    private Customer serverQ1;   // null = idle
-    private Customer serverQ2;   // null = idle
+    private Customer serverQ1; // null = idle
+    private Customer serverQ2; // null = idle
 
-    // Contatore clienti in think time (Q0 non ha coda esplicita, ha server infiniti)
+    // Contatore clienti in think time (Q0 non ha coda esplicita, ha server
+    // infiniti)
     private int inThinkQ0;
 
     // Statistiche
@@ -84,12 +91,12 @@ public class ClosedNetworkSimulator {
         this.rngs.plantSeeds(seed);
         this.rvgs = new Rvgs(rngs);
 
-        this.fel     = new EventList();
+        this.fel = new EventList();
         this.queueQ1 = new CustomerQueue();
         this.queueQ2 = new CustomerQueue();
-        this.stats   = new ClosedNetworkStatistics();
+        this.stats = new ClosedNetworkStatistics();
 
-        this.clock  = 0.0;
+        this.clock = 0.0;
         this.nextId = 1;
         this.serverQ1 = null;
         this.serverQ2 = null;
@@ -104,7 +111,7 @@ public class ClosedNetworkSimulator {
     public ClosedNetworkStatistics run() {
         initialize();
 
-        while (stats.getCompletionsQ1() < config.getMaxCompletions()) {
+        while (stats.getCompletionsQ1() + stats.getCompletionsQ2() < config.getMaxCompletions()) {
             Event event = fel.getMin();
             fel.dequeue();
 
@@ -113,8 +120,8 @@ public class ClosedNetworkSimulator {
 
             switch (event.getType()) {
                 case END_THINK_TIME -> processEndThinkTime(event);
-                case DEPARTURE      -> processDepartureQ1(event);
-                case TIMEOUT        -> processDepartureQ2(event);
+                case DEPARTURE -> processDepartureQ1(event);
+                case TIMEOUT -> processDepartureQ2(event);
                 default -> throw new IllegalStateException("Evento sconosciuto: " + event.getType());
             }
         }
@@ -141,13 +148,20 @@ public class ClosedNetworkSimulator {
     // =========================================================================
 
     /**
-     * Evento: cliente termina il think time in Q0 e si presenta a Q1.
+     * Evento: cliente termina il think time in Q0 e viene instradato
+     * probabilisticamente.
      *
      * Pseudo-codice:
+     * 
      * <pre>
      * inThinkQ0--
-     * se Q1 libero → startServiceQ1(customer)
-     * altrimenti   → queueQ1.enqueue(customer)
+     * u ~ Uniform(0,1)  via stream ROUTING
+     * SE u < p1:
+     *     customer.arrivalTimeAtQ1 ← clock
+     *     se Q1 libero → startServiceQ1(customer) altrimenti queueQ1.enqueue
+     * ALTRIMENTI:
+     *     customer.arrivalTimeAtQ2 ← clock
+     *     se Q2 libero → startServiceQ2(customer) altrimenti queueQ2.enqueue
      * </pre>
      *
      * @param event evento END_THINK_TIME
@@ -156,14 +170,26 @@ public class ClosedNetworkSimulator {
         Customer c = event.getCustomer();
         inThinkQ0--;
 
-        // Imposta il tempo di arrivo a Q1 (usato per calcolare E[T1])
-        c.setArrivalTimeAtQ1(clock);
+        // Decisione di routing: p1 → Q1, (1-p1) → Q2
+        rngs.selectStream(StreamType.ROUTING.ordinal());
+        double u = rngs.random();
 
-        if (serverQ1 == null) {
-            startServiceQ1(c);
+        if (u < config.getRoutingProbabilityQ1()) {
+            c.setArrivalTimeAtQ1(clock);
+            if (serverQ1 == null) {
+                startServiceQ1(c);
+            } else {
+                queueQ1.enqueue(c);
+                stats.setQueueLengthQ1(queueQ1.size());
+            }
         } else {
-            queueQ1.enqueue(c);
-            stats.setQueueLengthQ1(queueQ1.size());
+            c.setArrivalTimeAtQ2(clock);
+            if (serverQ2 == null) {
+                startServiceQ2(c);
+            } else {
+                queueQ2.enqueue(c);
+                stats.setQueueLengthQ2(queueQ2.size());
+            }
         }
     }
 
@@ -171,6 +197,7 @@ public class ClosedNetworkSimulator {
      * Evento: cliente completa il servizio in Q1 e si presenta a Q2.
      *
      * Pseudo-codice:
+     * 
      * <pre>
      * registra stats Q1
      * se queueQ1 non vuota → startServiceQ1(next)
@@ -197,20 +224,16 @@ public class ClosedNetworkSimulator {
             startServiceQ1(next);
         }
 
-        // Il cliente si dirige a Q2
-        departing.setArrivalTimeAtQ2(clock);
-        if (serverQ2 == null) {
-            startServiceQ2(departing);
-        } else {
-            queueQ2.enqueue(departing);
-            stats.setQueueLengthQ2(queueQ2.size());
-        }
+        // Il cliente torna a Q0 (pensa)
+        scheduleEndThinkTime(departing, clock);
+        inThinkQ0++;
     }
 
     /**
      * Evento: cliente completa il servizio in Q2 e torna a Q0 (think time).
      *
      * Pseudo-codice:
+     * 
      * <pre>
      * registra stats Q2
      * se queueQ2 non vuota → startServiceQ2(next)
@@ -284,12 +307,17 @@ public class ClosedNetworkSimulator {
     // =========================================================================
 
     /** @return clock simulato al termine della simulazione */
-    public double getClock() { return clock; }
+    public double getClock() {
+        return clock;
+    }
 
     /** @return configurazione utilizzata */
-    public ClosedNetworkConfig getConfig() { return config; }
+    public ClosedNetworkConfig getConfig() {
+        return config;
+    }
 
     /** @return clienti attualmente in think time (Q0) */
-    public int getInThinkQ0() { return inThinkQ0; }
+    public int getInThinkQ0() {
+        return inThinkQ0;
+    }
 }
-

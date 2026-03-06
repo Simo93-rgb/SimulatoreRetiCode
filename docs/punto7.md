@@ -102,32 +102,36 @@ La classe aperta da sola satura Q1 quando $\lambda_{open} \to 0.5$.
 
 ### Throughput
 
-| $\lambda_{open}$ | $X_{chiuso}$ (IC 95%) | $X_{aperto}$ (IC 95%) | $X_{Q1}^{tot}$ (IC 95%) | $X_{Q2}$ (IC 95%) |
-|---|---|---|---|---|
-| 0.10 | 0.7632 ∈ [0.7610, 0.7653] | 0.0994 ∈ [0.0986, 0.1001] | 0.8625 ∈ [0.8609, 0.8642] | 0.7631 ∈ [0.7610, 0.7653] |
-| 0.20 | 0.5922 ∈ [0.5894, 0.5950] | 0.1995 ∈ [0.1985, 0.2004] | 0.7917 ∈ [0.7896, 0.7938] | 0.5922 ∈ [0.5894, 0.5950] |
-| 0.30 | 0.4011 ∈ [0.3974, 0.4049] | 0.2989 ∈ [0.2977, 0.3001] | 0.7001 ∈ [0.6972, 0.7029] | 0.4011 ∈ [0.3974, 0.4049] |
-| 0.40 | 0.2032 ∈ [0.1996, 0.2067] | 0.3986 ∈ [0.3975, 0.3997] | 0.6018 ∈ [0.5990, 0.6046] | 0.2032 ∈ [0.1996, 0.2067] |
+| $\lambda_{open}$ | $X_{sistema}$ (IC 95%) | $X_{chiuso}^{Q1}$ (IC 95%) | $X_{aperto}^{Q1}$ (IC 95%) | $X_{Q1}^{tot}$ (IC 95%) | $X_{Q2}$ (IC 95%) |
+|---|---|---|---|---|---|
+| 0.10 | 1.2331 ∈ [1.2317, 1.2345] | 0.3702 ∈ [0.3693, 0.3710] | 0.0997 ∈ [0.0991, 0.1002] | 0.4698 ∈ [0.4690, 0.4706] | 0.8630 ∈ [0.8619, 0.8640] |
+| 0.20 | 1.1722 ∈ [1.1706, 1.1739] | 0.3516 ∈ [0.3505, 0.3526] | 0.1995 ∈ [0.1987, 0.2003] | 0.5511 ∈ [0.5502, 0.5519] | 0.8207 ∈ [0.8196, 0.8218] |
+| 0.30 | 1.0286 ∈ [1.0242, 1.0330] | 0.3081 ∈ [0.3063, 0.3098] | 0.2992 ∈ [0.2981, 0.3003] | 0.6072 ∈ [0.6059, 0.6086] | 0.7205 ∈ [0.7177, 0.7234] |
+| 0.40 | 0.6527 ∈ [0.6431, 0.6622] | 0.1955 ∈ [0.1925, 0.1986] | 0.3988 ∈ [0.3978, 0.3998] | 0.5943 ∈ [0.5920, 0.5966] | 0.4571 ∈ [0.4506, 0.4637] |
 
-**Osservazione**: All'aumentare di $\lambda_{open}$, il throughput della classe chiusa crolla (la classe aperta occupa Q1 sottraendo capacità), mentre $X_{Q2}$ segue perfettamente $X_{chiuso}$ confermando che la classe aperta non transita per Q2.
+**Osservazione**: $X_{sistema} = X_{Q1}^{chiuso} + X_{Q2}$ (i clienti chiusi tornano a Q0 da entrambe le uscite del branch parallelo). All'aumentare di $\lambda_{open}$, $X_{Q1}^{chiuso}$ crolla (la classe aperta satura Q1) e di conseguenza si riduce anche $X_{Q2}$.
 
 ---
 
 ### Utilizzo Q1 (dettaglio per classe) e Q2
 
-| $\lambda_{open}$ | $\rho_{Q1}^{tot}$ | $\rho_{Q1}^{chiuso}$ | $\rho_{Q1}^{aperto}$ | $\rho_{Q2}$ |
+| $\lambda_{open}$ | $\rho_{Q1}^{tot}$ (IC 95%) | $\rho_{Q1}^{chiuso}$ | $\rho_{Q1}^{aperto}$ | $\rho_{Q2}$ (IC 95%) |
 |---|---|---|---|---|
-| 0.10 | 0.9618 ∈ [0.9607, 0.9628] | 0.7632 | 0.1986 | 0.6101 ∈ [0.6078, 0.6125] |
-| 0.20 | 0.9909 ∈ [0.9905, 0.9914] | 0.5920 | 0.3990 | 0.4735 ∈ [0.4709, 0.4760] |
-| 0.30 | 0.9991 ∈ [0.9989, 0.9992] | 0.4009 | 0.5982 | 0.3208 ∈ [0.3175, 0.3241] |
-| 0.40 | 1.0000 ∈ [1.0000, 1.0000] | 0.2030 | 0.7970 | 0.1624 ∈ [0.1594, 0.1654] |
+| 0.10 | 0.5697 ∈ [0.5681, 0.5712] | 0.3702 | 0.1995 | 0.6896 ∈ [0.6885, 0.6907] |
+| 0.20 | 0.7504 ∈ [0.7485, 0.7524] | 0.3511 | 0.3993 | 0.6562 ∈ [0.6548, 0.6576] |
+| 0.30 | 0.9061 ∈ [0.9037, 0.9085] | 0.3077 | 0.5983 | 0.5764 ∈ [0.5742, 0.5786] |
+| 0.40 | 0.9924 ∈ [0.9918, 0.9931] | 0.1953 | 0.7971 | 0.3661 ∈ [0.3607, 0.3714] |
 
 **Verifica legge di utilizzo**:
-$\rho_{Q1}^{tot} = X_{chiuso} \cdot S_1 + X_{aperto} \cdot 2S_1$
+$\rho_{Q1}^{tot} = X_{Q1}^{chiuso} \cdot S_1 + X_{Q1}^{aperto} \cdot 2S_1$
 
-Per $\lambda=0.10$: $0.7632 \cdot 1.0 + 0.0994 \cdot 2.0 = 0.9620 \approx 0.9618$ ✓
+Per $\lambda=0.10$: $0.3702 \cdot 1.0 + 0.0997 \cdot 2.0 = 0.5696 \approx 0.5697$ ✓
 
-**Osservazione**: $\rho_{Q2}$ decresce con $\lambda_{open}$ perché il throughput della classe chiusa (l'unica che transita per Q2) diminuisce.
+**Verifica legge di utilizzo Q2**: $\rho_{Q2} = X_{Q2} \cdot S_2$
+
+Per $\lambda=0.10$: $0.8630 \times 0.8 = 0.6904 \approx 0.6896$ ✓
+
+**Osservazione**: $\rho_{Q2}$ decresce con $\lambda_{open}$ perché il flusso verso Q2 (proporzionale a $X_{Q1}^{chiuso} \cdot (1-p_1)$) si riduce man mano che la classe aperta satura Q1.
 
 ---
 
@@ -135,16 +139,17 @@ Per $\lambda=0.10$: $0.7632 \cdot 1.0 + 0.0994 \cdot 2.0 = 0.9620 \approx 0.9618
 
 | $\lambda_{open}$ | $E[T_1^{chiuso}]$ (IC 95%) | $E[T_1^{aperto}]$ (IC 95%) | $E[T_2]$ (IC 95%) | $E[T_{sys}^{chiuso}]$ (IC 95%) |
 |---|---|---|---|---|
-| 0.10 | 7.640 ∈ [7.574, 7.706] | 10.289 ∈ [10.188, 10.391] | 2.023 ∈ [2.008, 2.038] | 9.663 ∈ [9.606, 9.721] |
-| 0.20 | 13.631 ∈ [13.507, 13.755] | 17.568 ∈ [17.381, 17.755] | 1.712 ∈ [1.700, 1.724] | 15.343 ∈ [15.222, 15.463] |
-| 0.30 | 26.029 ∈ [25.672, 26.386] | 32.165 ∈ [31.726, 32.605] | 1.386 ∈ [1.377, 1.395] | 27.415 ∈ [27.066, 27.765] |
-| 0.40 | 62.819 ∈ [61.509, 64.130] | 75.013 ∈ [73.617, 76.410] | 1.086 ∈ [1.077, 1.094] | 63.905 ∈ [62.601, 65.209] |
+| 0.10 | 2.5823 ∈ [2.5673, 2.5972] | 3.9664 ∈ [3.9340, 3.9987] | 1.9976 ∈ [1.9896, 2.0056] | 2.1731 ∈ [2.1678, 2.1784] |
+| 0.20 | 4.9011 ∈ [4.8538, 4.9484] | 6.8032 ∈ [6.7299, 6.8765] | 1.9069 ∈ [1.8981, 1.9157] | 2.8048 ∈ [2.7917, 2.8179] |
+| 0.30 | 11.3204 ∈ [11.1060, 11.5348] | 14.7553 ∈ [14.4672, 15.0434] | 1.7160 ∈ [1.7056, 1.7264] | 4.5920 ∈ [4.5342, 4.6498] |
+| 0.40 | 40.3671 ∈ [39.2039, 41.5303] | 50.9676 ∈ [49.5928, 52.3423] | 1.3078 ∈ [1.2964, 1.3192] | 13.0070 ∈ [12.6741, 13.3399] |
 
 **Osservazioni**:
-- $E[T_1^{chiuso}]$ cresce drasticamente con $\lambda_{open}$: la classe aperta sottrae capacità di servizio a Q1, allungando l'attesa in coda per tutti.
-- $E[T_1^{aperto}] > E[T_1^{chiuso}]$ perché il servizio della classe aperta è il doppio (2.0 s vs 1.0 s), quindi anche a parità di attesa in coda il tempo totale è maggiore.
-- $E[T_2]$ *decresce* con $\lambda_{open}$: poiché $X_{chiuso}$ diminuisce, Q2 è sempre meno carica e il tempo di attesa si riduce.
-- **Interferenza tra classi**: a $\lambda=0.10$ il sistema è ancora bilanciato (i valori di $E[T_1^{chiuso}]$ e del punto 6 con N=15 erano 4.43 s; qui con la classe aperta diventano già 7.64 s, +72%).
+- $E[T_1^{chiuso}]$ cresce drasticamente con $\lambda_{open}$: la classe aperta sottrae capacità a Q1.
+- $E[T_1^{aperto}] > E[T_1^{chiuso}]$ perché il servizio è doppio (2S₁ = 2.0 s).
+- $E[T_2]$ *decresce* con $\lambda_{open}$: Q2 riceve meno traffico e si svuota.
+- **$E[T_{sys}^{chiuso}]$** è la media pesata sul mix Q1/Q2 reali (non più la somma sequenziale), risultando molto più bassa dei valori vecchi.
+- **Confronto con JMT**: i valori di $X_{sistema}$ ora corrispondono a quelli di JMT (es. $\lambda=0.10$: 1.23).
 
 ---
 
@@ -152,26 +157,27 @@ Per $\lambda=0.10$: $0.7632 \cdot 1.0 + 0.0994 \cdot 2.0 = 0.9620 \approx 0.9618
 
 | $\lambda_{open}$ | $E[N_{q1}]$ (IC 95%) | $E[N_{q2}]$ (IC 95%) |
 |---|---|---|
-| 0.10 | 5.891 ∈ [5.842, 5.941] | 0.934 ∈ [0.922, 0.946] |
-| 0.20 | 10.586 ∈ [10.504, 10.669] | 0.540 ∈ [0.533, 0.548] |
-| 0.30 | 19.058 ∈ [18.857, 19.259] | 0.235 ∈ [0.230, 0.241] |
-| 0.40 | 41.671 ∈ [41.020, 42.322] | 0.058 ∈ [0.056, 0.061] |
+| 0.10 | 0.7816 ∈ [0.7733, 0.7898] | 1.0342 ∈ [1.0273, 1.0412] |
+| 0.20 | 2.3301 ∈ [2.3006, 2.3597] | 0.9087 ∈ [0.9017, 0.9157] |
+| 0.30 | 6.9956 ∈ [6.8549, 7.1362] | 0.6601 ∈ [0.6516, 0.6687] |
+| 0.40 | 27.2231 ∈ [26.5415, 27.9046] | 0.2321 ∈ [0.2241, 0.2401] |
 
-**Osservazione**: $E[N_{q1}]$ cresce quasi esponenzialmente avvicinandosi alla saturazione di Q1 ($\lambda_{open} \to 0.45$). $E[N_{q2}]$ decresce specularmente per le stesse ragioni di $E[T_2]$.
+**Osservazione**: $E[N_{q1}]$ cresce quasi esponenzialmente avvicinandosi alla saturazione di Q1. $E[N_{q2}]$ decresce perché Q2 riceve sempre meno traffico.
 
 ---
 
 ## Confronto con il Punto 6 (N=15, solo classe chiusa)
 
-| Indice | Punto 6 (λ_open=0) | Punto 7 (λ_open=0.10) | Punto 7 (λ_open=0.30) |
+| Indice | Punto 6 ($\lambda_{open}=0$, $p_1=0.3$) | Punto 7 ($\lambda_{open}=0.10$) | Punto 7 ($\lambda_{open}=0.30$) |
 |--------|---|---|---|
-| $X_{chiuso}$ | 0.898 | 0.763 (−15%) | 0.401 (−55%) |
-| $\rho_{Q1}^{tot}$ | 0.898 | 0.962 (+7%) | 0.999 (+11%) |
-| $E[T_1^{chiuso}]$ | 4.430 s | 7.640 s (+72%) | 26.03 s (+488%) |
-| $E[T_{sys}^{chiuso}]$ | 6.715 s | 9.663 s (+44%) | 27.42 s (+308%) |
-| $E[N_{q1}]$ | 3.080 | 5.891 (+91%) | 19.06 (+519%) |
+| $X_{sistema}$ | 1.2622 | 1.2331 (−2%) | 1.0286 (−18%) |
+| $X_{Q1}^{chiuso}$ | 0.3775 | 0.3702 (−2%) | 0.3081 (−18%) |
+| $\rho_{Q1}^{tot}$ | 0.3771 | 0.5697 (+51%) | 0.9061 (+140%) |
+| $E[T_1^{chiuso}]$ | 1.53 s | 2.58 s (+69%) | 11.32 s (+640%) |
+| $E[T_{sys}^{chiuso}]$ | 1.90 s | 2.17 s (+14%) | 4.59 s (+142%) |
+| $E[N_{q1}]$ | 0.1993 | 0.7816 (+292%) | 6.9956 (+3410%) |
 
-**Osservazione**: L'impatto della classe aperta sulla classe chiusa è molto severo. Anche un carico aperto moderato ($\lambda_{open}=0.10$, $\rho_{Q1}^{aperto}=0.20$) allunga il tempo di risposta della classe chiusa del 72%. Questo illustra il **problema della competizione per la risorsa condivisa** Q1 in un sistema a classi miste.
+**Osservazione**: Anche un carico aperto leggero ($\lambda_{open}=0.10$, $\rho_{Q1}^{aperto}=0.20$) porta $\rho_{Q1}^{tot}$ da 0.38 a 0.57 (+51%) e $E[T_1^{chiuso}]$ da 1.53 s a 2.58 s (+69%). L'interferenza di risorse condivise ha un impatto non lineare: raddoppiare il carico aperto triplica i tempi di attesa.
 
 ---
 
