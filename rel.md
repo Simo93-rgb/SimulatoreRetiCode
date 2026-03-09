@@ -22,10 +22,18 @@ src/main/java/sim/
 **Raccolta dati** (Punti 5–7, con output testuale):
 
 ```powershell
-java -cp target/classes sim.runners.Punto5Runner | Out-File -Encoding utf8 results/punto5_results.md
-java -cp target/classes sim.runners.Punto6Runner | Out-File -Encoding utf8 results/punto6_results.md
-java -cp target/classes sim.runners.Punto7Runner | Out-File -Encoding utf8 results/punto7_results.md
+# defaults con salvataggio su file (R=20, parametri fissi)
+java -cp target/classes sim.Main punto5 | Out-File -Encoding utf8 results/punto5_results.md
+java -cp target/classes sim.Main punto6 | Out-File -Encoding utf8 results/punto6_results.md
+java -cp target/classes sim.Main punto7 | Out-File -Encoding utf8 results/punto7_results.md
+
+# esempio con parametri personalizzati
+java -cp target/classes sim.Main punto5 --replicas 30 --customers 200000
+java -cp target/classes sim.Main punto6 --replicas 30 --completions 100000 --N 5,15,30
+java -cp target/classes sim.Main punto7 --replicas 30 --N 20 --lambda 0.10,0.20,0.30,0.40
 ```
+
+Ogni runner accetta `--help` per la lista completa delle opzioni. I default ($R=20$, parametri fissi) riproducono esattamente i dati in `results/`.
 
 **Estrazione risultati JMT**: i CSV esportati da JMT sono pre-elaborati dagli script Python [`results/csv/JMT 6/extract_indexes.py`](results/csv/JMT%206/extract_indexes.py) (Python 3.13, pandas, numpy) e dallo script [`results/csv/JMT 7/extract_indexes.py`](results/csv/JMT%207/extract_indexes.py), che calcolano medie ponderate e IC 95% dai campioni grezzi (`SAMPLE`/`WEIGHT`) e producono i file `risultati_*.csv` nelle cartelle [`results/csv/JMT 6/`](results/csv/JMT%206/) e [`results/csv/JMT 7/`](results/csv/JMT%207/).
 
@@ -41,7 +49,7 @@ java -cp target/classes sim.runners.Punto7Runner | Out-File -Encoding utf8 resul
 |--------|-------|
 | `ServiceGenerator` | Genera variabili casuali con 4 distribuzioni (esponenziale, uniforme, Erlang-k, iperesponenziale) tramite le librerie Leemis-Park (`Rngs`/`Rvgs`). Nessun uso di `java.util.Random`. |
 | `SeedManager` | Fornisce semi sufficientemente distanziati ($\Delta = 10^5$ passi nel generatore LCM) per garantire l'indipendenza tra repliche e tra stream. |
-| `SimulationRunner` | Esegue $R$ repliche del simulatore M/M/1 con semi diversi (metodo prove ripetute) e calcola IC 95% via t-Student su ogni indice. |
+| `SimulationRunner` | Esegue $R$ repliche del simulatore M/M/1 con semi diversi (metodo prove ripetute) e calcola IC 95% via t-Student su ogni indice. $R$ è configurabile via CLI (`--replicas`); default $R = 20$. |
 | `SimulationStatistics` | Accumulatori (`areaServerBusy`, `areaQueueLength`, `sumResponsTime`, contatori arrivi/partenze) per calcolo degli indici in ogni replica. |
 | `core/EventList` | FEL (Future Event List) implementata come Splay Tree per inserimento/estrazione in $O(\log n)$ ammortizzato. |
 | `core/Customer`, `core/Event`, `core/EventType` | Entità fondamentali dello stato: un `Customer` porta il tempo di arrivo al nodo corrente; un `Event` lega tipo, cliente e clock di scatto. |
@@ -173,7 +181,7 @@ I punti 1–4 non hanno un runner eseguibile separato: la loro correttezza è in
 > Documentazione dettagliata e tutte le tabelle: [punto5.md](docs/punto5.md)  
 > Dati sorgente simulatore: [punto5_results.md](results/punto5_results.md)
 
-**Configurazione**: $\mu = 1.0$ serv/s, $R = 20$ repliche, $N_{\max} = 100\,000$ completamenti/replica.
+**Configurazione**: $\mu = 1.0$ serv/s, $R = 20$ repliche (configurabile via `--replicas`), $N_{\max} = 100\,000$ completamenti/replica (configurabile via `--customers`).
 
 ### Validazione M/M/1 (distribuzione esponenziale)
 
@@ -234,7 +242,7 @@ $$\text{Stato} = (n_0,\; n_1^{(q)},\; \text{busy}_1,\; n_2^{(q)},\; \text{busy}_
 
 Identici al M/M/1 per ogni centro $i \in \{1, 2\}$; in più si tiene traccia di `areaSystemSize_i` per derivare $E[N_i]$ tramite Little.  
 **Tempo di risposta del sistema centrale**: $E[T_{\text{sys}}] = (X_1 E[T_1] + X_2 E[T_2]) / X_{\text{sys}}$.  
-**Condizione di stop**: $\text{completamenti}_{Q1} \geq 50\,000$ (bottleneck); $R = 20$ repliche.
+**Condizione di stop**: $\text{completamenti}_{Q1} \geq 50\,000$ (bottleneck; configurabile via `--completions`); $R = 20$ repliche (configurabile via `--replicas`).
 
 ### Risultati (sintesi 4 regimi di carico)
 
@@ -268,7 +276,7 @@ Il modello del Punto 7 estende il sistema chiuso aggiungendo una **classe aperta
 
 **Generazione inter-arrivi iperesponenziali** ($p=0.5$, $\mu_1 = 2/E[A]$, $\mu_2 = 2/(3E[A])$): un campione $u \sim U(0,1)$ dallo stream `OPEN_ARRIVALS` seleziona quale delle due esponenziali usare.
 
-**Configurazione**: $N = 15$ (carico interattivo non saturo nel modello chiuso, $X^{(N=15)} = 1.382$, con headroom per la classe batch); $R = 20$ repliche × 50 000 completamenti classe chiusa.
+**Configurazione**: $N = 15$ (configurabile via `--N`; carico interattivo non saturo nel modello chiuso, $X^{(N=15)} = 1.382$, con headroom per la classe batch); $R = 20$ repliche × 50 000 completamenti classe chiusa (entrambi configurabili via `--replicas` e `--completions`).
 
 ### Risultati (sintesi al variare di $\lambda_{\text{open}}$)
 

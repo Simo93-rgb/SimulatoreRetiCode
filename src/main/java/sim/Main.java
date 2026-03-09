@@ -1,5 +1,7 @@
 package sim;
 
+import java.util.Arrays;
+
 import sim.runners.Punto5Runner;
 import sim.runners.Punto6Runner;
 import sim.runners.Punto7Runner;
@@ -24,9 +26,9 @@ public class Main {
         }
 
         switch (args[0].toLowerCase()) {
-            case "punto5" -> Punto5Runner.run();
-            case "punto6" -> Punto6Runner.run();
-            case "punto7" -> Punto7Runner.run();
+            case "punto5" -> Punto5Runner.main(Arrays.copyOfRange(args, 1, args.length));
+            case "punto6" -> Punto6Runner.main(Arrays.copyOfRange(args, 1, args.length));
+            case "punto7" -> Punto7Runner.main(Arrays.copyOfRange(args, 1, args.length));
             default -> {
                 System.err.println("Punto non riconosciuto: " + args[0]);
                 printHelp();
