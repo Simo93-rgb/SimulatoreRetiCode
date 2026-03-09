@@ -54,7 +54,7 @@ double arrivalTime = rvgs.exponential(1.0/lambda);
 
 
 3. **Distribuzioni Richieste:**
-Implementa un meccanismo (switch case o config file) per scegliere la distribuzione dei servizi come richiesto dalla *Consegna2025-26.pdf*:
+Implementa un meccanismo (switch case o config file) per scegliere la distribuzione dei servizi come richiesto dalla *Consegna2025-26.md*:
 * Esponenziale
 * Uniforme (range min, max)
 * Erlang (k stadi)

@@ -46,6 +46,102 @@ java -cp target/classes sim.runners.Punto7Runner | Out-File -Encoding utf8 resul
 | `core/EventList` | FEL (Future Event List) implementata come Splay Tree per inserimento/estrazione in $O(\log n)$ ammortizzato. |
 | `core/Customer`, `core/Event`, `core/EventType` | Entità fondamentali dello stato: un `Customer` porta il tempo di arrivo al nodo corrente; un `Event` lega tipo, cliente e clock di scatto. |
 
+### Diagramma delle classi (Punti 1–4)
+
+```mermaid
+classDiagram
+    class Rngs {
+        +plantSeeds(seed)
+        +selectStream(stream)
+        +random() double
+    }
+    class Rvgs {
+        +Rvgs(r)
+        +exponential(mean) double
+        +uniform(a, b) double
+        +erlang(mean, k) double
+    }
+    class ServiceGenerator {
+        -rngs Rngs
+        -rvgs Rvgs
+        +exponential(mean, stream) double
+        +uniform(a, b, stream) double
+        +erlang(mean, k, stream) double
+        +hyperexponential(p, m1, m2, stream) double
+    }
+    class SeedManager {
+        +DEFAULT_BASE_SEED$ long
+        +generateDistancedSeeds(seed, n)$ long[]
+    }
+    class SimulationConfig {
+        -arrivalRate double
+        -serviceRate double
+        -maxCustomers long
+        -serviceDistribution ServiceDistribution
+    }
+    class SimulationStatistics {
+        -areaUnderServerBusy double
+        -areaUnderQueueLength double
+        -sumResponseTime double
+        +updateAreas(t)
+        +recordDeparture(responseTime)
+    }
+    class EventList {
+        +insert(event)
+        +extract() Event
+    }
+    class Event {
+        +type EventType
+        +customer Customer
+        +clock double
+    }
+    class Customer {
+        +arrivalTime double
+    }
+    class MMMOneSimulator {
+        -config SimulationConfig
+        -rngs Rngs
+        -rvgs Rvgs
+        -serviceGen ServiceGenerator
+        -stats SimulationStatistics
+        +run() SimulationStatistics
+    }
+    class SimulationRunner {
+        -config SimulationConfig
+        -numReplicas int
+        -baseSeed long
+        +runReplications() ReplicationResults
+    }
+    class ReplicationResults {
+        -config SimulationConfig
+        -replicaStats SimulationStatistics[]
+        +getCI(extractor) ConfidenceInterval
+    }
+    class ConfidenceInterval {
+        +mean double
+        +lower double
+        +upper double
+        +re double
+    }
+
+    Rvgs --> Rngs : wraps
+    ServiceGenerator --> Rngs
+    ServiceGenerator --> Rvgs
+    MMMOneSimulator --> SimulationConfig
+    MMMOneSimulator --> Rngs
+    MMMOneSimulator --> Rvgs
+    MMMOneSimulator --> ServiceGenerator
+    MMMOneSimulator --> SimulationStatistics : crea
+    MMMOneSimulator --> EventList : FEL
+    Event --> Customer
+    SimulationRunner --> SimulationConfig
+    SimulationRunner --> SeedManager : usa statico
+    SimulationRunner --> MMMOneSimulator : crea per replica
+    SimulationRunner --> ReplicationResults : restituisce
+    ReplicationResults --> SimulationStatistics
+    ReplicationResults --> ConfidenceInterval
+```
+
 ### Stato, eventi, accumulatori (M/M/1)
 
 **Stato in ogni istante**: `numInQueue` (clienti in attesa), `serverBusy` (server libero/occupato).

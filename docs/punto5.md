@@ -1,5 +1,5 @@
 # Punto 5 — Validazione e Impatto della Variabilità
-Obiettivo Validare il simulatore confrontando i risultati con JMT (Java Modelling Tools) e studiare l'impatto della variabilità dei tempi di servizio sugli indici prestazionali, come descritto nel Capitolo 4 di Leemis-Park (*Impact of Variability of Interarrival and Service Times*).
+Validare il simulatore confrontando i risultati con JMT (Java Modelling Tools) e studiare l'impatto della variabilità dei tempi di servizio sugli indici prestazionali, come descritto nel Capitolo 4 di Leemis-Park (*Impact of Variability of Interarrival and Service Times*).
 
 ---
 ## 1. Validazione M/M/1
@@ -34,10 +34,13 @@ $\lambda = 0.9$, valori teorici: $E[T] = 10.0$ s, $E[N] = 9.0$
 | E[T] | 10.000 | 9.8209 ∈ [9.5487, 10.0930] | 10.1954 ∈ [9.9612, 10.4296] | 3.81% |
 | E[N] | 9.000 | 8.8366 ∈ [8.5821, 9.0911] | 9.1213 (Little: $T \times X$) | 3.22% |
 | E[Nq] | 8.100 | 7.9369 ∈ [7.6839, 8.1899] | 8.2415 (Little: $W \times X$) | 3.84% |
+
 **Nota**: Con $\rho$ alto la varianza inter-replica cresce e gli IC si allargano (RE ≈ 3%). Nonostante ciò, tutte le medie teoriche cadono negli IC del simulatore.
+
 ---
+
 ## 2. Impatto della Variabilità del Servizio
-### Motivazione (Cap. 4 Leemis-Park)
+### Motivazione [Cap. 4 Leemis-Park](docs/commento_chap4.md)
 Il risultato centrale del Capitolo 4 è che **a parità di media e di utilizzo, la varianza della distribuzione di servizio modifica drasticamente i tempi di risposta**. Per verificarlo, fissiamo $\lambda = 0.8$, $E[S] = 1.0$ s ($\rho = 0.8$) e variamo **solo** la distribuzione del servizio.
 ### Esperimento 4: M/D/1 (Deterministico, $C_s^2 \approx 0$)
 Servizio costante $D = 1.0$ s (approssimato con $U[0.9999, 1.0001]$).
