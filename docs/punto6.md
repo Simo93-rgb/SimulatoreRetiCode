@@ -21,7 +21,7 @@ Simulare il sistema per 4 valori di $N$ e calcolare throughput, utilizzi, tempi 
 | Q1 | Singolo server FCFS | Esponenziale | $S_1 = 1.0$ s |
 | Q2 | Singolo server FCFS | Esponenziale | $S_2 = 0.8$ s |
 
-**Collo di bottiglia**: $Q_2$ in termini assoluti, $D_1 = p_1 \cdot S_1 = 0.3 \times 1.0 = 0.3$s e $D_2 = (1-p_1) \cdot S_2 = 0.7 \times 0.8 = 0.56s$. Il massimo è $D_{\max} = 0.56$ (relativo a $Q_2$).
+**Collo di bottiglia**: $Q_2$ in termini assoluti, $D_1 = p_1 \cdot S_1 = 0.3 \times 1.0 = 0.3s$ e $D_2 = (1-p_1) \cdot S_2 = 0.7 \times 0.8 = 0.56s$. Il massimo è $D_{\max} = 0.56$ (relativo a $Q_2$).
 
 **Throughput asintotico** (bound di saturazione dall'analisi operazionale):
 $$X^*(N) = \min\!\left(\frac{1}{D_{\max}},\; \frac{N}{Z + D_1 + D_2}\right) = \min\!\left(\frac{1}{0.56},\; \frac{N}{10.0 + 0.3 + 0.56}\right) = \min\!\left(1.7857,\; \frac{N}{10.86}\right)$$
@@ -60,11 +60,17 @@ In ogni istante lo stato è completamente descritto da:
 ### Accumulatori statistici
 
 Per ogni centro di servizio $i \in \{1, 2\}$:
-- `areaServerBusy_i` $= \int_0^T \mathbb{1}[\text{busy}_i(t)]\, dt$ → **utilizzo** $\rho_i = \text{area}/T$
-- `areaQueueLength_i` $= \int_0^T n_i^{(q)}(t)\, dt$ → **E[Nq\_i]** $= \text{area}/T$
-- `areaSystemSize_i` $= \int_0^T n_i(t)\, dt$ → **E[N\_i]** $= \text{area}/T$
-- `sumResponseTime_i` $= \sum_j (t^{\text{dep}}_{i,j} - t^{\text{arr}}_{i,j})$ → **E[T\_i]** $= \text{sum}/\text{completamenti\_i}$
-- **E[T\_sys]** $=$ media pesata dei tempi di risposta in $Q_1$ e $Q_2$ sui completamenti totali.
+
+$$
+\begin{aligned}
+\\
+&\bullet \ \text{areaServerBusy}_i = \int_0^T \mathbb{1}[\text{busy}_i(t)]\, dt \rightarrow \rho_i = \text{area}/T \\
+&\bullet \ \text{areaQueueLength}_i = \int_0^T n_i^{(q)}(t)\, dt \rightarrow E[Nq_i] = \text{area}/T \\
+&\bullet \ \text{areaSystemSize}_i = \int_0^T n_i(t)\, dt \rightarrow E[N_i] = \text{area}/T \\
+&\bullet \ \text{sumResponseTime}_i = \sum_j (t^{\text{dep}}_{i,j} - t^{\text{arr}}_{i,j}) \implies E[T_i] = \frac{\text{sum}_i}{\text{completamenti}_i} \\
+&\bullet \ \mathbf{T_{\text{sys}}} = \text{media pesata dei tempi di risposta in } Q_1 \text{ e } Q_2.
+\end{aligned}
+$$
 
 ### Condizione di stop
 
