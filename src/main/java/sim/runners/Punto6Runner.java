@@ -24,30 +24,82 @@ import sim.SimulationRunner.ReplicationResults.ConfidenceInterval;
  */
 public class Punto6Runner {
 
-    private static final int NUM_REPLICAS = 20;
-    private static final long COMPLETIONS = 50_000L; // completamenti Q1 per replica
-
-    // Parametri sistema (fissi tra tutti gli esperimenti)
-    private static final double THINK_TIME = 10.0;
-    private static final double SERVICE_Q1 = 1.0;
-    private static final double SERVICE_Q2 = 0.8;
-
-    // Valori di N da simulare
-    private static final int[] N_VALUES = { 5, 11, 17, 23, 30 };
+    private static final int     DEFAULT_REPLICAS    = 20;
+    private static final long    DEFAULT_COMPLETIONS = 50_000L;
+    private static final double  DEFAULT_Z           = 10.0;
+    private static final double  DEFAULT_S1          = 1.0;
+    private static final double  DEFAULT_S2          = 0.8;
+    private static final double  DEFAULT_P1          = 0.3;
+    private static final int[]   DEFAULT_N_VALUES    = { 5, 11, 17, 23, 30 };
 
     public static void main(String[] args) {
-        run();
+        int    numReplicas  = DEFAULT_REPLICAS;
+        long   completions  = DEFAULT_COMPLETIONS;
+        double thinkTime    = DEFAULT_Z;
+        double serviceQ1    = DEFAULT_S1;
+        double serviceQ2    = DEFAULT_S2;
+        double routingP1    = DEFAULT_P1;
+        int[]  nValues      = DEFAULT_N_VALUES;
+
+        for (int i = 0; i < args.length; i++) {
+            switch (args[i]) {
+                case "--replicas":
+                    if (i + 1 < args.length) numReplicas = Integer.parseInt(args[++i]);
+                    break;
+                case "--completions":
+                    if (i + 1 < args.length) completions = Long.parseLong(args[++i]);
+                    break;
+                case "--N":
+                    if (i + 1 < args.length) {
+                        String[] parts = args[++i].split(",");
+                        nValues = new int[parts.length];
+                        for (int j = 0; j < parts.length; j++) nValues[j] = Integer.parseInt(parts[j].trim());
+                    }
+                    break;
+                case "--Z":
+                    if (i + 1 < args.length) thinkTime = Double.parseDouble(args[++i]);
+                    break;
+                case "--S1":
+                    if (i + 1 < args.length) serviceQ1 = Double.parseDouble(args[++i]);
+                    break;
+                case "--S2":
+                    if (i + 1 < args.length) serviceQ2 = Double.parseDouble(args[++i]);
+                    break;
+                case "--p1":
+                    if (i + 1 < args.length) routingP1 = Double.parseDouble(args[++i]);
+                    break;
+                case "--help":
+                    System.out.println("Uso: Punto6Runner [opzioni]");
+                    System.out.println("  --replicas N      Numero di repliche (default: " + DEFAULT_REPLICAS + ")");
+                    System.out.println("  --completions N   Completamenti Q1 per replica (default: " + DEFAULT_COMPLETIONS + ")");
+                    System.out.println("  --N n1,n2,...     Valori di N da simulare (default: 5,11,17,23,30)");
+                    System.out.println("  --Z val           Think time medio (default: " + DEFAULT_Z + ")");
+                    System.out.println("  --S1 val          Servizio medio Q1 (default: " + DEFAULT_S1 + ")");
+                    System.out.println("  --S2 val          Servizio medio Q2 (default: " + DEFAULT_S2 + ")");
+                    System.out.println("  --p1 val          Probabilità routing verso Q1 (default: " + DEFAULT_P1 + ")");
+                    return;
+                default:
+                    System.err.println("Argomento sconosciuto: " + args[i]);
+            }
+        }
+
+        run(numReplicas, completions, thinkTime, serviceQ1, serviceQ2, routingP1, nValues);
     }
 
     public static void run() {
-        System.out.println("# PUNTO 6 - SISTEMA CHIUSO CON Q0, Q1, Q2\n");
-        System.out.println("- **Parametri**: `Z=" + THINK_TIME + "s`, `S1=" + SERVICE_Q1
-                + "s`, `S2=" + SERVICE_Q2 + "s`");
-        System.out.println("- **Configurazione**: `R=" + NUM_REPLICAS
-                + "` repliche, `" + COMPLETIONS + "` completamenti/replica\n");
+        run(DEFAULT_REPLICAS, DEFAULT_COMPLETIONS, DEFAULT_Z, DEFAULT_S1, DEFAULT_S2, DEFAULT_P1, DEFAULT_N_VALUES);
+    }
 
-        for (int N : N_VALUES) {
-            runExperiment(N);
+    public static void run(int numReplicas, long completions, double thinkTime,
+                           double serviceQ1, double serviceQ2, double routingP1, int[] nValues) {
+        System.out.println("# PUNTO 6 - SISTEMA CHIUSO CON Q0, Q1, Q2\n");
+        System.out.println("- **Parametri**: `Z=" + thinkTime + "s`, `S1=" + serviceQ1
+                + "s`, `S2=" + serviceQ2 + "s`, `p1=" + routingP1 + "`");
+        System.out.println("- **Configurazione**: `R=" + numReplicas
+                + "` repliche, `" + completions + "` completamenti/replica\n");
+
+        for (int N : nValues) {
+            runExperiment(N, numReplicas, completions, thinkTime, serviceQ1, serviceQ2, routingP1);
         }
 
         System.out.println("---\n");
@@ -55,7 +107,8 @@ public class Punto6Runner {
         System.out.println("I risultati sono pronti per essere inseriti in `results/punto6.md`.\n");
     }
 
-    private static void runExperiment(int N) {
+    private static void runExperiment(int N, int numReplicas, long completions,
+                                       double thinkTime, double serviceQ1, double serviceQ2, double routingP1) {
         // Etichetta carico
         String loadLabel = switch (N) {
             case 5 -> "LEGGERO";
@@ -69,12 +122,12 @@ public class Punto6Runner {
         System.out.println("## ESPERIMENTO N=" + N + " (carico " + loadLabel + ")\n");
 
         ClosedNetworkConfig config = new ClosedNetworkConfig(
-                N, THINK_TIME, SERVICE_Q1, SERVICE_Q2, 0.3, COMPLETIONS);
+                N, thinkTime, serviceQ1, serviceQ2, routingP1, completions);
 
         System.out.printf("- **Throughput bound superiore X*(N)**: `%.4f job/s`%n\n",
                 config.getSaturationThroughputBound());
 
-        ClosedNetworkResults results = new ClosedNetworkRunner(config, NUM_REPLICAS).runReplications();
+        ClosedNetworkResults results = new ClosedNetworkRunner(config, numReplicas).runReplications();
 
         printResults(results);
         System.out.println();

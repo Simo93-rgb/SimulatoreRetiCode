@@ -31,39 +31,94 @@ import sim.SimulationRunner.ReplicationResults.ConfidenceInterval;
  */
 public class Punto7Runner {
 
-    private static final int NUM_REPLICAS = 20;
-    private static final long COMPLETIONS = 50_000L;
-
-    private static final int N = 15;
-    private static final double THINK_TIME = 10.0;
-    private static final double SERVICE_Q1 = 1.0;
-    private static final double SERVICE_Q2 = 0.8;
-    private static final double HYPER_P = 0.5;
-
-    // Tassi $\\lambda$ della classe aperta da esplorare.
-    // Nota: la classe aperta occupa Q1 per 2·S1=2s → satura Q1 quando
-    // $\\lambda_{open} \\cdot 2 \\to 1$,
-    // cioè $\\lambda \\approx 0.45$.
-    // Esploriamo fino a $\\lambda=0.40$ per mantenere il sistema in regime stabile
-    // e
-    // confrontabile.
-    private static final double[] LAMBDA_OPEN = { 0.10, 0.20, 0.30, 0.40 };
+    private static final int      DEFAULT_REPLICAS    = 20;
+    private static final long     DEFAULT_COMPLETIONS = 50_000L;
+    private static final int      DEFAULT_N           = 15;
+    private static final double   DEFAULT_Z           = 10.0;
+    private static final double   DEFAULT_S1          = 1.0;
+    private static final double   DEFAULT_S2          = 0.8;
+    private static final double   DEFAULT_P1          = 0.3;
+    private static final double   DEFAULT_HYPER_P     = 0.5;
+    private static final double[] DEFAULT_LAMBDA_OPEN = { 0.10, 0.20, 0.30, 0.40 };
 
     public static void main(String[] args) {
-        run();
+        int      numReplicas  = DEFAULT_REPLICAS;
+        long     completions  = DEFAULT_COMPLETIONS;
+        int      N            = DEFAULT_N;
+        double   thinkTime    = DEFAULT_Z;
+        double   serviceQ1    = DEFAULT_S1;
+        double   serviceQ2    = DEFAULT_S2;
+        double   routingP1    = DEFAULT_P1;
+        double   hyperP       = DEFAULT_HYPER_P;
+        double[] lambdaOpen   = DEFAULT_LAMBDA_OPEN;
+
+        for (int i = 0; i < args.length; i++) {
+            switch (args[i]) {
+                case "--replicas":
+                    if (i + 1 < args.length) numReplicas = Integer.parseInt(args[++i]);
+                    break;
+                case "--completions":
+                    if (i + 1 < args.length) completions = Long.parseLong(args[++i]);
+                    break;
+                case "--N":
+                    if (i + 1 < args.length) N = Integer.parseInt(args[++i]);
+                    break;
+                case "--Z":
+                    if (i + 1 < args.length) thinkTime = Double.parseDouble(args[++i]);
+                    break;
+                case "--S1":
+                    if (i + 1 < args.length) serviceQ1 = Double.parseDouble(args[++i]);
+                    break;
+                case "--S2":
+                    if (i + 1 < args.length) serviceQ2 = Double.parseDouble(args[++i]);
+                    break;
+                case "--p1":
+                    if (i + 1 < args.length) routingP1 = Double.parseDouble(args[++i]);
+                    break;
+                case "--lambda":
+                    if (i + 1 < args.length) {
+                        String[] parts = args[++i].split(",");
+                        lambdaOpen = new double[parts.length];
+                        for (int j = 0; j < parts.length; j++) lambdaOpen[j] = Double.parseDouble(parts[j].trim());
+                    }
+                    break;
+                case "--help":
+                    System.out.println("Uso: Punto7Runner [opzioni]");
+                    System.out.println("  --replicas N      Numero di repliche (default: " + DEFAULT_REPLICAS + ")");
+                    System.out.println("  --completions N   Completamenti classe chiusa per replica (default: " + DEFAULT_COMPLETIONS + ")");
+                    System.out.println("  --N val           Clienti chiusi (default: " + DEFAULT_N + ")");
+                    System.out.println("  --Z val           Think time medio (default: " + DEFAULT_Z + ")");
+                    System.out.println("  --S1 val          Servizio medio Q1 classe chiusa (default: " + DEFAULT_S1 + ")");
+                    System.out.println("  --S2 val          Servizio medio Q2 (default: " + DEFAULT_S2 + ")");
+                    System.out.println("  --p1 val          Probabilità routing verso Q1 (default: " + DEFAULT_P1 + ")");
+                    System.out.println("  --lambda l1,l2,.  Tassi lambda classe aperta (default: 0.10,0.20,0.30,0.40)");
+                    return;
+                default:
+                    System.err.println("Argomento sconosciuto: " + args[i]);
+            }
+        }
+
+        run(numReplicas, completions, N, thinkTime, serviceQ1, serviceQ2, routingP1, hyperP, lambdaOpen);
     }
 
     public static void run() {
-        System.out.println("# PUNTO 7 - SISTEMA MISTO: CLASSE CHIUSA (N=15) + CLASSE APERTA\n");
-        System.out.println("- **Parametri fissi**: `Z=" + THINK_TIME + "s`, `S1=" + SERVICE_Q1
-                + "s`, `S2=" + SERVICE_Q2 + "s`, `S1_open=" + (2 * SERVICE_Q1) + "s`");
-        System.out.println("- **Inter-arrivi aperti**: Hyperexp(p=" + HYPER_P
-                + ", mean1=0.5 $\\cdot$ E[A], mean2=1.5 $\\cdot$ E[A])");
-        System.out.println("- **Configurazione**: `R=" + NUM_REPLICAS
-                + "` repliche, `" + COMPLETIONS + "` completamenti classe chiusa/replica\n");
+        run(DEFAULT_REPLICAS, DEFAULT_COMPLETIONS, DEFAULT_N, DEFAULT_Z, DEFAULT_S1, DEFAULT_S2,
+                DEFAULT_P1, DEFAULT_HYPER_P, DEFAULT_LAMBDA_OPEN);
+    }
 
-        for (double lambda : LAMBDA_OPEN) {
-            runExperiment(lambda);
+    public static void run(int numReplicas, long completions, int N,
+                           double thinkTime, double serviceQ1, double serviceQ2,
+                           double routingP1, double hyperP, double[] lambdaOpen) {
+        System.out.println("# PUNTO 7 - SISTEMA MISTO: CLASSE CHIUSA (N=" + N + ") + CLASSE APERTA\n");
+        System.out.println("- **Parametri fissi**: `Z=" + thinkTime + "s`, `S1=" + serviceQ1
+                + "s`, `S2=" + serviceQ2 + "s`, `S1_open=" + (2 * serviceQ1) + "s`");
+        System.out.println("- **Inter-arrivi aperti**: Hyperexp(p=" + hyperP
+                + ", mean1=0.5 $\\cdot$ E[A], mean2=1.5 $\\cdot$ E[A])");
+        System.out.println("- **Configurazione**: `R=" + numReplicas
+                + "` repliche, `" + completions + "` completamenti classe chiusa/replica\n");
+
+        for (double lambda : lambdaOpen) {
+            runExperiment(lambda, numReplicas, completions, N, thinkTime, serviceQ1, serviceQ2, routingP1, hyperP);
         }
 
         System.out.println("---\n");
@@ -71,7 +126,9 @@ public class Punto7Runner {
         System.out.println("I risultati sono pronti per essere inseriti in `results/punto7.md`.\n");
     }
 
-    private static void runExperiment(double lambda) {
+    private static void runExperiment(double lambda, int numReplicas, long completions,
+                                       int N, double thinkTime, double serviceQ1, double serviceQ2,
+                                       double routingP1, double hyperP) {
         double meanInterarrival = 1.0 / lambda;
         double mean1 = 0.5 * meanInterarrival;
         double mean2 = 1.5 * meanInterarrival;
@@ -83,10 +140,10 @@ public class Punto7Runner {
         System.out.printf("- **mean2**: `%.3f s`\n\n", mean2);
 
         MixedNetworkConfig config = new MixedNetworkConfig(
-                N, THINK_TIME, SERVICE_Q1, SERVICE_Q2, 0.3, COMPLETIONS,
-                HYPER_P, mean1, mean2);
+                N, thinkTime, serviceQ1, serviceQ2, routingP1, completions,
+                hyperP, mean1, mean2);
 
-        MixedNetworkResults results = new MixedNetworkRunner(config, NUM_REPLICAS).runReplications();
+        MixedNetworkResults results = new MixedNetworkRunner(config, numReplicas).runReplications();
 
         printResults(results, lambda);
         System.out.println();
