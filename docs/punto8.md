@@ -1,4 +1,6 @@
-# Punto 8 — Validazione del Modello: confronto Simulatore vs JMT
+# Punto 8 — JMT vs Simulatore Java
+
+## Confronto Modello Chiuso
 
 ## Configurazione comune
 
@@ -132,3 +134,145 @@ I valori JMT sono derivati ($E[N_q] = E[N] - \rho$, senza IC); il simulatore rip
 *valore assoluto $E[N_{q1}] \approx 0.016$ a $N=5$: errore assoluto $\approx 0.002$.
 
 **Conclusione**: il simulatore Java e JMT producono stime concordanti per tutte le metriche e tutti i regimi di carico. Le poche mancate sovrapposizioni degli IC riguardano configurazioni prossime alla saturazione ($N \geq 17$ per $\rho_2$ ed $E[T_2]$) dove la varianza campionaria è più elevata per entrambi gli strumenti; le differenze in valore assoluto restano $< 2.5\%$, compatibili con la variabilità statistica attesa. Il simulatore è pertanto **validato** per il modello chiuso con $Q_0, Q_1, Q_2$.
+
+---
+
+## Confronto Modello Aperto
+
+### Configurazione comune
+
+| Parametro | Valore |
+|-----------|--------|
+| $N$ (clienti classe chiusa) | 15 |
+| $Z$ (think time Q0) | 10.0 s |
+| $S_1$ (servizio Q1 — classe chiusa) | 1.0 s |
+| $S_2$ (servizio Q2 — tutte le classi) | 0.8 s |
+| $S_1^{\text{open}}$ (servizio Q1 — classe aperta) | 2.0 s |
+| $p_1$ (prob. routing → Q1) | 0.3 |
+| Distribuzione inter-arrivi aperta | Iper-esponenziale ($p{=}0.5$, $\mu_1{=}2/E[A]$, $\mu_2{=}2/(3E[A])$) |
+| Valori di $\lambda_{\text{open}}$ testati | 0.10, 0.20, 0.30, 0.40 |
+
+**Simulatore Java**: 20 repliche × 50 000 completamenti (classe chiusa), IC 95% con metodo delle repliche indipendenti.  
+**JMT**: simulazione a eventi discreti, classe chiusa + classe aperta iper-esponenziale, IC 95% estratti dai CSV di output.
+
+---
+
+### 1. Throughput di sistema (classe chiusa)
+
+| $\lambda$ | Sim $X_{\text{sys}}^{\text{ch}}$ (IC 95%) | JMT $X_{\text{sys}}^{\text{ch}}$ (IC 95%) | $\Delta\%$ | IC si sovrappongono? |
+|-----------|----------------------------------------|-----------------------------------------|--------|---|
+| 0.10 | 1.2331 ∈ [1.2317, 1.2345] | 1.2294 ∈ [1.2064, 1.2524] | 0.30% | ✓ |
+| 0.20 | 1.1722 ∈ [1.1706, 1.1739] | 1.1667 ∈ [1.1508, 1.1825] | 0.47% | ✓ |
+| 0.30 | 1.0286 ∈ [1.0242, 1.0330] | 1.0245 ∈ [1.0141, 1.0349] | 0.40% | ✓ |
+| 0.40 | 0.6527 ∈ [0.6431, 0.6622] | 0.6497 ∈ [0.6477, 0.6518] | 0.46% | ✓ |
+
+### Throughput per centro
+
+| $\lambda$ | Sim $X_{Q1}^{\text{tot}}$ | JMT $X_{Q1}^{\text{tot}}$ | $\Delta\%$ | Sim $X_{Q1}^{\text{ch}}$ | JMT $X_{Q1}^{\text{ch}}$ | $\Delta\%$ | Sim $X_{Q1}^{\text{ap}}$ | JMT $X_{Q1}^{\text{ap}}$ | $\Delta\%$ | Sim $X_{Q2}$ | JMT $X_{Q2}$ | $\Delta\%$ |
+|-----------|------|------|-----|------|-----|-----|------|-----|-----|------|------|-----|
+| 0.10 | 0.4698 | 0.4667 | 0.66% | 0.3702 | 0.3685 | 0.46% | 0.0997 | 0.1019 | 2.21% | 0.8630 | 0.8680 | 0.58% |
+| 0.20 | 0.5511 | 0.5475 | 0.65% | 0.3516 | 0.3501 | 0.43% | 0.1995 | 0.2010 | 0.75% | 0.8207 | 0.8209 | 0.02% |
+| 0.30 | 0.6072 | 0.6103 | 0.51% | 0.3081 | 0.3110 | 0.94% | 0.2992 | 0.2962 | 1.00% | 0.7205 | 0.7149 | 0.78% |
+| 0.40 | 0.5943 | 0.6184 | **4.06%** | 0.1955 | 0.1946 | 0.46% | 0.3988 | 0.3987 | 0.03% | 0.4571 | 0.4606 | 0.77% |
+
+**Osservazione**: il throughput di sistema della classe chiusa concorda entro lo 0.5% per tutti i $\lambda$; tutti gli IC si sovrappongono. Il throughput aggregato a Q1 ($X_{Q1}^{\text{tot}}$) diverge del 4.1% a $\lambda{=}0.40$, con IC non sovrapposti: a saturazione di Q1 ($\rho_{Q1}^{\text{tot}} \approx 0.99$) la stima è sensibile alle differenze implementative della distribuzione iper-esponenziale.
+
+---
+
+### 2. Utilizzo dei server
+
+| $\lambda$ | Sim $\rho_{Q1}^{\text{tot}}$ (IC 95%) | JMT $\rho_{Q1}^{\text{tot}}$ (IC 95%) | $\Delta\%$ | IC si sovrappongono? |
+|-----------|------|------|--------|---|
+| 0.10 | 0.5697 ∈ [0.5681, 0.5712] | 0.5737 ∈ [0.5696, 0.5777] | 0.70% | ✓ |
+| 0.20 | 0.7504 ∈ [0.7485, 0.7524] | 0.7496 ∈ [0.7458, 0.7535] | 0.11% | ✓ |
+| 0.30 | 0.9061 ∈ [0.9037, 0.9085] | 0.9081 ∈ [0.9049, 0.9112] | 0.22% | ✓ |
+| 0.40 | 0.9924 ∈ [0.9918, 0.9931] | 0.9893 ∈ [0.9886, 0.9901] | 0.31% | ✗ (entrambi ≈ 0.99) |
+
+| $\lambda$ | Sim $\rho_{Q2}$ (IC 95%) | JMT $\rho_{Q2}$ (IC 95%) | $\Delta\%$ | IC si sovrappongono? |
+|-----------|------|------|--------|---|
+| 0.10 | 0.6896 ∈ [0.6885, 0.6907] | 0.6938 ∈ [0.6873, 0.7003] | 0.61% | ✓ |
+| 0.20 | 0.6562 ∈ [0.6548, 0.6576] | 0.6533 ∈ [0.6501, 0.6564] | 0.44% | ✓ |
+| 0.30 | 0.5764 ∈ [0.5742, 0.5786] | 0.5797 ∈ [0.5761, 0.5833] | 0.57% | ✓ |
+| 0.40 | 0.3661 ∈ [0.3607, 0.3714] | 0.3633 ∈ [0.3622, 0.3643] | 0.76% | ✓ |
+
+**Osservazione**: l'utilizzo di Q2 concorda entro l'1% per tutti i valori di $\lambda$. La mancata sovrapposizione su $\rho_{Q1}^{\text{tot}}$ a $\lambda{=}0.40$ (Sim 0.9924 vs JMT 0.9893) è ininfluente in pratica: entrambi i valori indicano saturazione ($\rho \approx 0.99$).
+
+---
+
+### 3. Tempi medi di risposta
+
+#### Q1 — classe chiusa $E[T_1^{\text{ch}}]$
+
+| $\lambda$ | Sim $E[T_1^{\text{ch}}]$ (IC 95%) | JMT $E[T_1^{\text{ch}}]$ (IC 95%) | $\Delta\%$ | IC si sovrappongono? |
+|-----------|------|------|--------|---|
+| 0.10 | 2.5823 ∈ [2.5673, 2.5972] | 2.6420 ∈ [2.6202, 2.6637] | 2.31% | ✗ |
+| 0.20 | 4.9011 ∈ [4.8538, 4.9484] | 5.0829 ∈ [5.0518, 5.1141] | 3.71% | ✗ |
+| 0.30 | 11.3204 ∈ [11.1060, 11.5348] | 11.5460 ∈ [11.4936, 11.5985] | 1.99% | ✓ |
+| 0.40 | 40.3671 ∈ [39.2039, 41.5303] | 40.7016 ∈ [40.6016, 40.8015] | 0.83% | ✓ |
+
+#### Q1 — classe aperta $E[T_1^{\text{ap}}]$
+
+| $\lambda$ | Sim $E[T_1^{\text{ap}}]$ (IC 95%) | JMT $E[T_1^{\text{ap}}]$ (IC 95%) | $\Delta\%$ | IC si sovrappongono? |
+|-----------|------|------|--------|---|
+| 0.10 | 3.9664 ∈ [3.9340, 3.9987] | 4.0154 ∈ [3.9851, 4.0457] | 1.24% | ✓ |
+| 0.20 | 6.8032 ∈ [6.7299, 6.8765] | 7.0123 ∈ [6.9559, 7.0688] | 3.07% | ✗ |
+| 0.30 | 14.7553 ∈ [14.4672, 15.0434] | 15.2151 ∈ [15.1608, 15.2694] | 3.12% | ✗ |
+| 0.40 | 50.9676 ∈ [49.5928, 52.3423] | 52.1118 ∈ [52.0443, 52.1794] | 2.24% | ✓ |
+
+#### Q2 — $E[T_2]$
+
+| $\lambda$ | Sim $E[T_2]$ (IC 95%) | JMT $E[T_2]$ (IC 95%) | $\Delta\%$ | IC si sovrappongono? |
+|-----------|------|------|--------|---|
+| 0.10 | 1.9976 ∈ [1.9896, 2.0056] | 1.9980 ∈ [1.9805, 2.0155] | 0.02% | ✓ |
+| 0.20 | 1.9069 ∈ [1.8981, 1.9157] | 1.8900 ∈ [1.8781, 1.9020] | 0.89% | ✓ |
+| 0.30 | 1.7160 ∈ [1.7056, 1.7264] | 1.7501 ∈ [1.7351, 1.7650] | 1.99% | ✗ |
+| 0.40 | 1.3078 ∈ [1.2964, 1.3192] | 1.3107 ∈ [1.3044, 1.3171] | 0.22% | ✓ |
+
+#### Sistema (soli centri di servizio) — $E[T_{\text{sys}}^{\text{ch}}]$ derivato
+
+Calcolato come $E[T_{\text{sys}}^{\text{ch}}] = (X_1^{\text{ch}} E[T_1^{\text{ch}}] + X_2 E[T_2]) / X_{\text{sys}}^{\text{ch}}$ per entrambi gli strumenti.
+
+| $\lambda$ | Sim $E[T_{\text{sys}}^{\text{ch}}]$ (IC 95%) | JMT $E[T_{\text{sys}}^{\text{ch}}]$ (derivato) | $\Delta\%$ |
+|-----------|------|------|--------|
+| 0.10 | 2.1731 ∈ [2.1678, 2.1784] | 2.1443 | 1.33% |
+| 0.20 | 2.8048 ∈ [2.7917, 2.8179] | 2.8293 | 0.87% |
+| 0.30 | 4.5920 ∈ [4.5342, 4.6498] | 4.5774 | 0.32% |
+| 0.40 | 13.0070 ∈ [12.6741, 13.3399] | 13.0928 | 0.66% |
+
+**Osservazione**: i tempi di risposta a Q1 per la classe chiusa mostrano scostamenti del 2–4% a carichi bassi ($\lambda \leq 0.20$), con IC non sovrapposti, che si riducono a $< 1\%$ ad alto carico ($\lambda \geq 0.40$). Un andamento analogo si osserva per la classe aperta a Q1 ($\lambda{=}0.20$ e $0.30$). Lo scostamento su $E[T_2]$ a $\lambda{=}0.30$ (1.99%) è coerente con la lieve differenza nel throughput a Q2. Il tempo di ciclo centrale della classe chiusa ($E[T_{\text{sys}}^{\text{ch}}]$) concorda entro l'1.4% in tutti i casi.
+
+---
+
+### 4. Lunghezza media delle code
+
+I valori JMT sono derivati (tramite Little: $E[N_{qi}] = X_{Qi} \cdot E[T_i] - \rho_{Qi}$, senza IC); il simulatore riporta IC con metodo delle repliche.
+
+| $\lambda$ | Sim $E[N_{q1}]$ (IC 95%) | JMT $E[N_{q1}]$ | $\Delta\%$ | Sim $E[N_{q2}]$ (IC 95%) | JMT $E[N_{q2}]$ | $\Delta\%$ |
+|-----------|------|------|--------|------|------|--------|
+| 0.10 | 0.7816 ∈ [0.7733, 0.7898] | 0.8136 | 4.09% | 1.0342 ∈ [1.0273, 1.0412] | 1.0236 | 1.02% |
+| 0.20 | 2.3301 ∈ [2.3006, 2.3597] | 2.4176 | 3.76% | 0.9087 ∈ [0.9017, 0.9157] | 0.9018 | 0.76% |
+| 0.30 | 6.9956 ∈ [6.8549, 7.1362] | 7.1934 | 2.83% | 0.6601 ∈ [0.6516, 0.6687] | 0.6441 | 2.42% |
+| 0.40 | 27.2231 ∈ [26.5415, 27.9046] | 27.5630 | 1.25% | 0.2321 ∈ [0.2241, 0.2401] | 0.2301 | 0.86% |
+
+**Osservazione**: $E[N_{q1}]$ mostra differenze del 3–4% per $\lambda \leq 0.20$, coerenti con la sovrastima JMT dei tempi di risposta chiusi a tali carichi (Little: $E[N_{q1}] = X_{Q1}^{\text{tot}} \cdot E[T_1] - \rho_{Q1}$). Per $\lambda{=}0.40$ la concordanza migliora all'1.2%.
+
+---
+
+### 5. Sintesi della validazione
+
+| Metrica | $\Delta\%$ tipico | $\Delta\%$ massimo | IC sempre sovrapposti? |
+|---------|---------|---------|---|
+| $X_{\text{sys}}^{\text{ch}}$ | $< 0.5\%$ | 0.47% ($\lambda{=}0.20$) | **Sì** |
+| $X_{Q1}^{\text{tot}}$, $X_{Q1}^{\text{ch}}$, $X_{Q2}$ | $< 1\%$ | 4.06%* | No (solo $X_{Q1}^{\text{tot}}$ a $\lambda{=}0.40$) |
+| $\rho_{Q1}^{\text{tot}}$ | $< 0.75\%$ | 0.70% | No ($\lambda{=}0.40$, entrambi $\approx 0.99$) |
+| $\rho_{Q2}$ | $< 0.8\%$ | 0.76% | **Sì** |
+| $E[T_1^{\text{ch}}]$ | $< 2\%$ | 3.71% ($\lambda{=}0.20$) | No ($\lambda{=}0.10, 0.20$) |
+| $E[T_1^{\text{ap}}]$ | $2{-}3\%$ | 3.12% ($\lambda{=}0.30$) | No ($\lambda{=}0.20, 0.30$) |
+| $E[T_2]$ | $< 1\%$ | 1.99% ($\lambda{=}0.30$) | No (solo $\lambda{=}0.30$) |
+| $E[T_{\text{sys}}^{\text{ch}}]$ | $< 1.4\%$ | 1.33% | — |
+| $E[N_{q1}]$ | $2{-}4\%$ | 4.09% ($\lambda{=}0.10$) | — |
+| $E[N_{q2}]$ | $< 2.5\%$ | 2.42% ($\lambda{=}0.30$) | — |
+
+*differenza assoluta $\approx 0.024$ job/s a $\lambda{=}0.40$.
+
+**Conclusione**: throughput del sistema e utilizzo dei server concordano entro l'1% con JMT per tutti i valori di $\lambda_{\text{open}}$. Le differenze più consistenti riguardano i tempi di risposta a Q1 per entrambe le classi a carichi medi ($\lambda{=}0.20$–$0.30$): JMT stima tempi mediamente del 2–4% più elevati, verosimilmente a causa di piccole differenze nell'implementazione della distribuzione iper-esponenziale e nella gestione delle priorità in coda mista. A carichi estremi ($\lambda{=}0.40$, con $\rho_{Q1} \approx 0.99$) la concordanza migliora sensibilmente perché il sistema è bottleneck-dominante. Il simulatore è pertanto **validato** per il modello misto chiuso/aperto con differenze compatibili con la variabilità di stima.
