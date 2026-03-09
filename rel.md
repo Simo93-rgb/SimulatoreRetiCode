@@ -17,8 +17,19 @@ src/main/java/sim/
 ├── ServiceGenerator    # generatore distribuzioni Leemis-Park
 └── SeedManager         # semi distanziati e stream
 ```
+**Prerequisiti**: avere `Maven` installato. Su Windows dentro Powershell lanciare il comando `winget install Apache.Maven` e controllare che sia correttamente installato con il comando `mvn -version`. L'output atteso dovrebbe somigliare a questo:
+```powershell                                          
+Apache Maven 3.9.12 (848fbb4bf2d427b72bdb2471c22fced7ebd9a7a1)
+Maven home: C:\Users\simon\scoop\apps\maven\current
+Java version: 25.0.2, vendor: Microsoft, runtime: C:\Program Files\Microsoft\jdk-25.0.2.10-hotspot
+Default locale: en_GB, platform encoding: UTF-8
+OS name: "windows 11", version: "10.0", arch: "amd64", family: "windows"
+```
 
-**Build e test**: `mvn clean test` (115 test JUnit5 — coprono la validazione di tutti i punti 1–7)  
+**Build e test**: `mvn clean test` (115 test JUnit5 — coprono la validazione di tutti i punti 1–7)
+
+> **Prima esecuzione** (o dopo ogni modifica alle sorgenti): eseguire `mvn compile` oppure `mvn clean compile` per popolare `target/classes/`. Il comando `mvn clean test` fa già tutto (compile + test), quindi se si è già lanciato quello le classi sono aggiornate.
+
 **Raccolta dati** (Punti 5–7, con output testuale):
 
 ```powershell
@@ -210,6 +221,20 @@ A carico elevato ($\rho = 0.9$) gli IC si allargano (RE ≈ 3%) per l'alta varia
 
 > Documentazione dettagliata: [punto6.md](docs/punto6.md)  
 > Dati sorgente: [punto6_results.md](results/punto6_results.md)
+
+### Classi sostituite/estese rispetto al simulatore M/M/1
+
+| Classe M/M/1 | Controparte sistema chiuso | Variazione |
+|---|---|---|
+| `SimulationConfig` | `ClosedNetworkConfig` | Parametri N, Z, S1, S2, p1 al posto di λ, μ, maxCustomers |
+| `MMMOneSimulator` | `ClosedNetworkSimulator` | 3 centri, 2 server FCFS, routing stocastico, FEL condivisa |
+| `SimulationStatistics` | `ClosedNetworkStatistics` | Accumulatori separati per Q1 e Q2 |
+| `SimulationRunner` | `ClosedNetworkRunner` | Stessa logica a repliche con semi distanziati; tipo risultato diverso |
+| `Punto5Runner` | `Punto6Runner` | Entry point con parametri specifici del sistema chiuso |
+| `core/EventType` (2 tipi) | `core/EventType` (4 tipi) | Aggiunti `END_THINK_TIME` (scadenza think time in Q0) e `TIMEOUT` (partenza da Q2) |
+
+Classi **riusate invariate**: `libraries.Rngs`, `libraries.Rvgs`, `SeedManager`, `core/EventList`, `core/Customer`, `core/Event`.  
+`ServiceGenerator` non è usato nei sistemi chiuso/misto: i tempi di servizio sono generati direttamente nei simulatori tramite `Rvgs` e i rispettivi stream.
 
 ### Modello
 
