@@ -46,6 +46,13 @@ java -cp target/classes sim.Main punto7 --replicas 30 --N 20 --lambda 0.10,0.20,
 
 Ogni runner accetta `--help` per la lista completa delle opzioni. I default ($R=20$, parametri fissi) riproducono esattamente i dati in `results/`.
 
+**Dati JMT** (CSV grezzi esportati da JMT): i file CSV non sono inclusi nel repository per dimensioni. Sono disponibili come release assets:
+
+- [`JMT.6.7z`](https://github.com/Simo93-rgb/SimulatoreRetiCode/releases/download/v1.0-data/JMT.6.7z) (38 MB) — simulazioni punto 6, struttura piatta
+- [`JMT.7.7z`](https://github.com/Simo93-rgb/SimulatoreRetiCode/releases/download/v1.0-data/JMT.7.7z) (180 MB) — simulazioni punto 7, suddivisi per $\lambda_{open}$ (`10/`, `20/`, `30/`, `40/`)
+
+Estrarre il contenuto rispettivamente in `results/csv/JMT 6/` e `results/csv/JMT 7/` prima di eseguire gli script.
+
 **Estrazione risultati JMT**: i CSV esportati da JMT sono pre-elaborati dagli script Python [`results/csv/JMT 6/extract_indexes.py`](results/csv/JMT%206/extract_indexes.py) (Python 3.13, pandas, numpy) e dallo script [`results/csv/JMT 7/extract_indexes.py`](results/csv/JMT%207/extract_indexes.py), che calcolano medie ponderate e IC 95% dai campioni grezzi (`SAMPLE`/`WEIGHT`) e producono i file `risultati_*.csv` nelle cartelle [`results/csv/JMT 6/`](results/csv/JMT%206/) e [`results/csv/JMT 7/`](results/csv/JMT%207/).
 
 ---
