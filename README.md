@@ -364,3 +364,4 @@ I modelli JMT sono stati costruiti come esatti analoghi dei due simulatori Java 
 - **FEL come Splay Tree**: l'uso di uno Splay Tree per la Future Event List garantisce operazioni in $O(\log n)$ ammortizzato; nelle simulazioni a lungo termine (50 000 completamenti) la differenza rispetto a una lista ordinata è apprezzabile.
 - **Gestione dei semi**: l'approccio Leemis-Park con semi distanziati di $10^5$ passi ha garantito l'assenza di sovrapposizioni nelle sequenze anche con 20 repliche parallele e 5 stream per replica.
 - **Script Python per JMT**: JMT esporta campioni grezzi (coppie `SAMPLE`/`WEIGHT`) anziché statistiche aggregate. Lo script `extract_indexes.py` calcola la media ponderata e l'IC 95% con propagazione degli errori (inverso della media per il throughput). 
+- **FAQ**: altre considerazioni teoriche nel [qui](docs/FAQ.md)
